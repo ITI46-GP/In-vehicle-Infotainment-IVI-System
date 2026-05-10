@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(IVI VERSION 0.1 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(Qt6 REQUIRED COMPONENTS Quick)
+
+qt_standard_project_setup(REQUIRES 6.8)
+
+qt_add_executable(appIVI
+    main.cpp
+)
+
+qt_add_qml_module(appIVI
+    URI IVI
+    VERSION 1.0
+    QML_FILES
+        Main.qml
+        frontend/Dashboard.qml
+        frontend/components/LeftPanel.qml
+        frontend/components/CenterPanel.qml
+        frontend/components/RightPanel.qml
+        frontend/components/BottomBar.qml
+        frontend/Pages/ProfilePage.qml
+        frontend/Pages/VoiceAssistantPage.qml
+        frontend/Pages/LightsPage.qml
+        frontend/Pages/ClimatePage.qml
+        frontend/Pages/SettingsPage.qml
+        frontend/Pages/MusicPage.qml
+        QML_FILES frontend/components/BackButton.qml
+)
+
+set_target_properties(appIVI PROPERTIES
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE
+)
+
+target_link_libraries(appIVI
+    PRIVATE Qt6::Quick
+)
+
+include(GNUInstallDirs)
+install(TARGETS appIVI
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

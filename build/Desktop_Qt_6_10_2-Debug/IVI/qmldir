@@ -1,0 +1,18 @@
+module IVI
+typeinfo appIVI.qmltypes
+prefer :/qt/qml/IVI/
+Main 1.0 Main.qml
+Dashboard 1.0 frontend/Dashboard.qml
+LeftPanel 1.0 frontend/components/LeftPanel.qml
+CenterPanel 1.0 frontend/components/CenterPanel.qml
+RightPanel 1.0 frontend/components/RightPanel.qml
+BottomBar 1.0 frontend/components/BottomBar.qml
+ProfilePage 1.0 frontend/Pages/ProfilePage.qml
+VoiceAssistantPage 1.0 frontend/Pages/VoiceAssistantPage.qml
+LightsPage 1.0 frontend/Pages/LightsPage.qml
+ClimatePage 1.0 frontend/Pages/ClimatePage.qml
+SettingsPage 1.0 frontend/Pages/SettingsPage.qml
+MusicPage 1.0 frontend/Pages/MusicPage.qml
+BackButton 1.0 frontend/components/BackButton.qml
+depends QtQuick
+
