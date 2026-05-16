@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/IVI/">
-    <file alias="frontend/qmldir">/home/abdo/GP/QT/IVI/build/Desktop_Qt_6_10_2-Debug/IVI/frontend/qmldir</file>
-    <file alias="frontend/components/qmldir">/home/abdo/GP/QT/IVI/build/Desktop_Qt_6_10_2-Debug/IVI/frontend/components/qmldir</file>
-    <file alias="frontend/Pages/qmldir">/home/abdo/GP/QT/IVI/build/Desktop_Qt_6_10_2-Debug/IVI/frontend/Pages/qmldir</file>
-  </qresource>
-</RCC>
-

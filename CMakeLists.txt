@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(IVI VERSION 0.1 LANGUAGES CXX)
+project(GP_IVI VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -8,42 +8,49 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-qt_add_executable(appIVI
+qt_add_executable(appGP_IVI
     main.cpp
 )
 
-qt_add_qml_module(appIVI
-    URI IVI
-    VERSION 1.0
+qt_add_qml_module(appGP_IVI
+    URI GP_IVI
     QML_FILES
         Main.qml
-        frontend/Dashboard.qml
-        frontend/components/LeftPanel.qml
-        frontend/components/CenterPanel.qml
-        frontend/components/RightPanel.qml
-        frontend/components/BottomBar.qml
-        frontend/Pages/ProfilePage.qml
-        frontend/Pages/VoiceAssistantPage.qml
-        frontend/Pages/LightsPage.qml
-        frontend/Pages/ClimatePage.qml
-        frontend/Pages/SettingsPage.qml
-        frontend/Pages/MusicPage.qml
-        QML_FILES frontend/components/BackButton.qml
+        SplashScreen.qml
+        pages/DashboardPage.qml
+        components/TopStatusBar.qml
+        components/SideMenu.qml
+        components/VehicleOverviewCard.qml
+        components/RightPanel.qml
+        components/BottomNavBar.qml
+    RESOURCES
+        assets/images/iti_logo.png
+        assets/images/tesla.png
+        assets/icons/car_home.svg
+        assets/icons/ai_assistant.svg
+        assets/icons/climate_fan.svg
+        assets/icons/settings_gear.svg
+        assets/icons/weather.png
+        assets/icons/light.png
 )
 
-set_target_properties(appIVI PROPERTIES
+# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
+# If you are developing for iOS or macOS you should consider setting an
+# explicit, fixed bundle identifier manually though.
+set_target_properties(appGP_IVI PROPERTIES
+#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appGP_IVI
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
 
-target_link_libraries(appIVI
+target_link_libraries(appGP_IVI
     PRIVATE Qt6::Quick
 )
 
 include(GNUInstallDirs)
-install(TARGETS appIVI
+install(TARGETS appGP_IVI
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

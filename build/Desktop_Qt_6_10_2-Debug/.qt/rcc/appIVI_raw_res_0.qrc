@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/IVI/">
-    <file alias="Screen01.ui">/home/abdo/GP/QT/IVI/Screen01.ui</file>
-  </qresource>
-</RCC>
-

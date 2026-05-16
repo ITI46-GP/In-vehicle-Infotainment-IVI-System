@@ -1,4 +1,0 @@
-#ifndef VOICEASSISTANT_H
-#define VOICEASSISTANT_H
-
-#endif // VOICEASSISTANT_H

@@ -1,4 +1,0 @@
-#ifndef CARDATAMANAGER_H
-#define CARDATAMANAGER_H
-
-#endif // CARDATAMANAGER_H
