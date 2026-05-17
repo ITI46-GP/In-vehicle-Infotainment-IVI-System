@@ -21,19 +21,18 @@ Item {
     readonly property real mediaHeight: compact ? 126 : 132
 
     // Live media mock state
-    property bool isPlaying: true
     property int trackIndex: 0
-    property real mediaProgress: 0.42
 
     property var playlist: [
         { "title": "When I Was A Child", "artist": "Jerry Max", "album": "Solar" },
         { "title": "Night Drive", "artist": "Volt Audio", "album": "EV Sessions" },
         { "title": "Electric Roads", "artist": "Nova Lane", "album": "Afterglow" }
     ]
-
-    property string songTitle: playlist[trackIndex].title
-    property string songArtist: playlist[trackIndex].artist
-    property string songAlbum: playlist[trackIndex].album
+    property bool isPlaying: audioManager ? audioManager.playing : false
+    property string songTitle: audioManager ? audioManager.currentSongTitle : "No Media"
+    property string songArtist: ""
+    property string songAlbum: ""
+    property real mediaProgress: audioManager ? (audioManager.position / audioManager.duration) : 0
 
     // Live navigation mock state
     property bool routeActive: false
@@ -249,18 +248,24 @@ Item {
 
                 MediaControlButton {
                     icon: "‹"
-                    onClicked: root.previousTrack()
+                    onClicked:{
+                        if (audioManager) audioManager.prev()
+                        }
                 }
 
                 MediaControlButton {
                     icon: root.isPlaying ? "Ⅱ" : "▶"
                     active: true
-                    onClicked: root.playPause()
+                    onClicked: {
+                        if (audioManager) audioManager.togglePlayPause()
+                    }
                 }
 
                 MediaControlButton {
                     icon: "›"
-                    onClicked: root.nextTrack()
+                    onClicked: {
+                    if (audioManager) audioManager.next()
+                }
                 }
             }
 
