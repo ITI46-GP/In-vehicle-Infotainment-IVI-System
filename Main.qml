@@ -1,6 +1,10 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Window
+import QtQuick.Controls
 import "pages"
+import "components"
 
 Window {
     id: root
@@ -44,6 +48,117 @@ Window {
 
         transformOrigin: Item.Center
 
+        StackView {
+            id: stackView
+            anchors.fill: parent
+
+            opacity: root.splashFinished ? 1 : 0
+            visible: opacity > 0
+
+            initialItem: dashboardComponent
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 800
+                    easing.type: Easing.InOutQuad
+                }
+            }
+        }
+
+        Component {
+            id: dashboardComponent
+
+            DashboardPage {
+                onProfileRequested: {
+                    keyboardOverlay.closeKeyboard()
+                    stackView.push(profileComponent)
+                }
+                onLightsRequested: {
+                    keyboardOverlay.closeKeyboard()
+                    stackView.push(lightsComponent)
+                }
+                onSettingsRequested: {
+                    keyboardOverlay.closeKeyboard()
+                    stackView.push(settingsComponent)
+                }
+                onMapRequested: {
+                    keyboardOverlay.closeKeyboard()
+                    stackView.push(mapComponent)
+                }
+                onAssistantRequested: {
+                    keyboardOverlay.closeKeyboard()
+                    stackView.push(assistantComponent)
+                }
+            }
+
+        }
+
+        Component {
+            id: profileComponent
+
+            ProfilePage {
+                onBackClicked: {
+                    keyboardOverlay.closeKeyboard()
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
+        Component {
+            id: lightsComponent
+
+            LightsPage {
+                onBackClicked: {
+                    keyboardOverlay.closeKeyboard()
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
+        Component {
+            id: settingsComponent
+
+            SettingsPage {
+                onBackClicked: {
+                    keyboardOverlay.closeKeyboard()
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
+        Component {
+            id: mapComponent
+
+            MapPage {
+                onKeyboardRequested: function(textInput) {
+                    keyboardOverlay.openFor(textInput)
+                }
+                onBackClicked: {
+                    keyboardOverlay.closeKeyboard()
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
+        Component {
+            id: assistantComponent
+
+            AssistantPage {
+                onKeyboardRequested: function(textInput) {
+                    keyboardOverlay.openFor(textInput)
+                }
+                onBackClicked: {
+                    keyboardOverlay.closeKeyboard()
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
 
         SplashScreen {
             anchors.fill: parent
@@ -62,17 +177,12 @@ Window {
             }
         }
 
-        DashboardPage {
-            anchors.fill: parent
-            opacity: root.splashFinished ? 1 : 0
-            visible: opacity > 0
-
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 800
-                    easing.type: Easing.InOutQuad
-                }
-            }
+        OnScreenKeyboard {
+            id: keyboardOverlay
+            z: 999
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
         }
     }
 

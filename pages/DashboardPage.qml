@@ -3,7 +3,14 @@ import "../components"
 
 Item {
     id: dashboardRoot
-    anchors.fill: parent
+    width: 1024
+    height: 600
+
+    signal profileRequested()
+    signal lightsRequested()
+    signal settingsRequested()
+    signal mapRequested()
+    signal assistantRequested()
 
     readonly property real margin: Math.max(14, Math.min(18, width * 0.016))
     readonly property real gap: Math.max(12, Math.min(16, width * 0.014))
@@ -48,11 +55,11 @@ Item {
         width: dashboardRoot.sideWidth
         height: dashboardRoot.contentHeight
 
-        onProfileClicked: console.log("Profile clicked")
-        onAssistantClicked: console.log("Assistant clicked")
-        onLightsClicked: console.log("Lights clicked")
+        onProfileClicked: dashboardRoot.profileRequested()
+        onAssistantClicked: dashboardRoot.assistantRequested()
+        onLightsClicked: dashboardRoot.lightsRequested()
         onClimateClicked: console.log("Climate clicked")
-        onSettingsClicked: console.log("Settings clicked")
+        onSettingsClicked: dashboardRoot.settingsRequested()
     }
 
     VehicleOverviewCard {
@@ -72,7 +79,7 @@ Item {
         height: dashboardRoot.contentHeight
 
         onMediaClicked: console.log("Media preview clicked")
-        onMapClicked: console.log("Map preview clicked")
+        onMapClicked: dashboardRoot.mapRequested()
     }
 
     BottomNavBar {
@@ -85,12 +92,13 @@ Item {
         anchors.bottomMargin: dashboardRoot.margin
         height: dashboardRoot.bottomBarHeight
 
+        onSettingsClicked: dashboardRoot.settingsRequested()
         onHomeClicked: console.log("Home clicked")
         onClimateClicked: console.log("Climate bottom clicked")
         onMediaClicked: console.log("Media bottom clicked")
         onWeatherClicked: console.log("Weather clicked")
         onAppsClicked: console.log("Apps clicked")
-        onAssistantClicked: console.log("AI Assistant bottom clicked")
+        onAssistantClicked: dashboardRoot.assistantRequested()
 
         onDriverTempUp: console.log("Driver temp up")
         onDriverTempDown: console.log("Driver temp down")
