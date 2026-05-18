@@ -111,10 +111,10 @@ Item {
         onSettingsClicked:  dashboardRoot.settingsRequested()
         onAssistantClicked: dashboardRoot.assistantRequested()
 
-        onDriverTempUp:     console.log("Driver temp up")
-        onDriverTempDown:   console.log("Driver temp down")
-        onPassengerTempUp:  console.log("Passenger temp up")
-        onPassengerTempDown: console.log("Passenger temp down")
+        onDriverTempUp:     if (HvacBackend) HvacBackend.increaseDriverTemp()
+        onDriverTempDown:   if (HvacBackend) HvacBackend.decreaseDriverTemp()
+        onPassengerTempUp:  if (HvacBackend) HvacBackend.increasePassengerTemp()
+        onPassengerTempDown: if (HvacBackend) HvacBackend.decreasePassengerTemp()
         onVolumeUp:         console.log("Volume up")
         onVolumeDown:       console.log("Volume down")
     }

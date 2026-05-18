@@ -95,6 +95,16 @@ Window {
                     keyboardOverlay.closeKeyboard()
                     stackView.push(mediaComponent)
                 }
+
+                onWeatherRequested: {
+                    keyboardOverlay.closeKeyboard()
+                    stackView.push(weatherComponent)
+                }
+
+                onClimateRequested: {
+                    keyboardOverlay.closeKeyboard()
+                    stackView.push(climateComponent)
+                }
             }
         }
 
@@ -177,7 +187,27 @@ Window {
             }
         }
 
-        
+        Component {
+            id: weatherComponent
+            WeatherPage {
+                onBackClicked: {
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
+
+        Component {
+            id: climateComponent
+            ClimatePage {
+                onBackClicked: {
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
 
         OnScreenKeyboard {
             id: keyboardOverlay

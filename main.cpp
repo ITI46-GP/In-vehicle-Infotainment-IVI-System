@@ -1,7 +1,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext> 
-#include "audioplayer.h" 
+#include "src/audio/audioplayer.h"
+#include "src/weather/WeatherAPI.h"
+#include "src/climate/hvaccontroller.h" 
 
 int main(int argc, char *argv[])
 {
@@ -11,6 +13,12 @@ int main(int argc, char *argv[])
 
     AudioPlayer audioPlayer;
     engine.rootContext()->setContextProperty("audioManager", &audioPlayer);
+
+    WeatherAPI weatherApi;
+    engine.rootContext()->setContextProperty("weatherApi", &weatherApi);
+
+    HvacController hvacBackend;
+    engine.rootContext()->setContextProperty("HvacBackend", &hvacBackend);
 
 
     QObject::connect(
