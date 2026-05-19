@@ -11,6 +11,9 @@ Item {
     signal settingsRequested()
     signal mapRequested()
     signal assistantRequested()
+    signal mediaRequested()
+    signal climateRequested()
+    signal weatherRequested()
 
     readonly property real margin: Math.max(14, Math.min(18, width * 0.016))
     readonly property real gap: Math.max(12, Math.min(16, width * 0.014))
@@ -40,6 +43,7 @@ Item {
             GradientStop { position: 1.0; color: "#07000E" }
         }
     }
+
     TopStatusBar {
         id: topStatusBar
         anchors.top: parent.top
@@ -55,11 +59,11 @@ Item {
         width: dashboardRoot.sideWidth
         height: dashboardRoot.contentHeight
 
-        onProfileClicked: dashboardRoot.profileRequested()
-        onAssistantClicked: dashboardRoot.assistantRequested()
-        onLightsClicked: dashboardRoot.lightsRequested()
-        onClimateClicked: console.log("Climate clicked")
-        onSettingsClicked: dashboardRoot.settingsRequested()
+        onProfileClicked:    dashboardRoot.profileRequested()
+        onAssistantClicked:  dashboardRoot.assistantRequested()
+        onLightsClicked:     dashboardRoot.lightsRequested()
+        onClimateClicked:    dashboardRoot.climateRequested()
+        onSettingsClicked:   dashboardRoot.settingsRequested()
     }
 
     VehicleOverviewCard {
@@ -68,7 +72,6 @@ Item {
         y: dashboardRoot.contentTop
         width: dashboardRoot.centerWidth
         height: dashboardRoot.contentHeight
-
     }
 
     RightPanel {
@@ -78,8 +81,14 @@ Item {
         width: dashboardRoot.rightWidth
         height: dashboardRoot.contentHeight
 
-        onMediaClicked: console.log("Media preview clicked")
-        onMapClicked: dashboardRoot.mapRequested()
+        onMediaClicked: {
+        console.log("RightPanel mediaClicked!")
+        dashboardRoot.mediaRequested()
+    }
+    onMapClicked: {
+        console.log("RightPanel mapClicked!")
+        dashboardRoot.mapRequested()
+    }
     }
 
     BottomNavBar {
@@ -92,20 +101,21 @@ Item {
         anchors.bottomMargin: dashboardRoot.margin
         height: dashboardRoot.bottomBarHeight
 
-        onSettingsClicked: dashboardRoot.settingsRequested()
-        onHomeClicked: console.log("Home clicked")
-        onClimateClicked: console.log("Climate bottom clicked")
-        onMediaClicked: console.log("Media bottom clicked")
-        onWeatherClicked: console.log("Weather clicked")
-        onAppsClicked: console.log("Apps clicked")
+        onHomeClicked:      console.log("Home clicked")
+        onClimateClicked:   dashboardRoot.climateRequested()
+        onMediaClicked: {
+        console.log("BottomNavBar mediaClicked!")
+        dashboardRoot.mediaRequested()
+        }
+        onWeatherClicked:   dashboardRoot.weatherRequested()
+        onSettingsClicked:  dashboardRoot.settingsRequested()
         onAssistantClicked: dashboardRoot.assistantRequested()
 
-        onDriverTempUp: console.log("Driver temp up")
-        onDriverTempDown: console.log("Driver temp down")
-        onPassengerTempUp: console.log("Passenger temp up")
-        onPassengerTempDown: console.log("Passenger temp down")
-        onVolumeUp: console.log("Volume up")
-        onVolumeDown: console.log("Volume down")
+        onDriverTempUp:     if (HvacBackend) HvacBackend.increaseDriverTemp()
+        onDriverTempDown:   if (HvacBackend) HvacBackend.decreaseDriverTemp()
+        onPassengerTempUp:  if (HvacBackend) HvacBackend.increasePassengerTemp()
+        onPassengerTempDown: if (HvacBackend) HvacBackend.decreasePassengerTemp()
+        onVolumeUp:         console.log("Volume up")
+        onVolumeDown:       console.log("Volume down")
     }
-
 }
