@@ -1,2 +1,11 @@
 /build*
 .vscode/*
+build/
+.qt/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.user
+*.autosave
+*.bak
+*.old
