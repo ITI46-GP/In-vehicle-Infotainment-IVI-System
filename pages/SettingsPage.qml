@@ -15,15 +15,15 @@ Item {
     property color violet: "#8B5CF6"
     property color cyan: "#21D4FD"
 
-    property bool wifiOn: false
-    property bool bluetoothOn: true
-    property bool darkMode: true
-    property bool autoBrightness: false
+    readonly property bool wifiOn: settingsManager.wifiOn
+    readonly property bool bluetoothOn: settingsManager.bluetoothOn
+    readonly property bool darkMode: settingsManager.darkMode
+    readonly property bool autoBrightness: settingsManager.autoBrightness
     property bool driveAlerts: true
-    property bool privacyMode: false
+    readonly property bool privacyMode: settingsManager.privacyMode
 
-    property int brightness: 52
-    property int systemVolume: 52
+    readonly property int brightness: settingsManager.brightness
+    readonly property int systemVolume: settingsManager.systemVolume
 
     Rectangle {
         anchors.fill: parent
@@ -310,7 +310,7 @@ Item {
                             title: "Wi-Fi"
                             subtitle: "Network"
                             checked: root.wifiOn
-                            onClicked: root.wifiOn = !root.wifiOn
+                            onClicked: settingsManager.toggleWifi()
                         }
 
                         SettingsToggleCard {
@@ -319,7 +319,7 @@ Item {
                             title: "Bluetooth"
                             subtitle: "Phone"
                             checked: root.bluetoothOn
-                            onClicked: root.bluetoothOn = !root.bluetoothOn
+                            onClicked: settingsManager.toggleBluetooth()
                         }
 
                         SettingsToggleCard {
@@ -328,7 +328,7 @@ Item {
                             title: "Dark Mode"
                             subtitle: "Theme"
                             checked: root.darkMode
-                            onClicked: root.darkMode = !root.darkMode
+                            onClicked: settingsManager.toggleDarkMode()
                         }
 
                         SettingsToggleCard {
@@ -337,7 +337,7 @@ Item {
                             title: "Auto Bright"
                             subtitle: "Display"
                             checked: root.autoBrightness
-                            onClicked: root.autoBrightness = !root.autoBrightness
+                            onClicked: settingsManager.toggleAutoBrightness()
                         }
 
                         SettingsToggleCard {
@@ -355,7 +355,7 @@ Item {
                             title: "Privacy"
                             subtitle: "Personal"
                             checked: root.privacyMode
-                            onClicked: root.privacyMode = !root.privacyMode
+                            onClicked: settingsManager.togglePrivacyMode()
                         }
                     }
 
@@ -365,8 +365,8 @@ Item {
                         title: "DISPLAY BRIGHTNESS"
                         value: root.brightness + "%"
                         percentValue: root.brightness
-                        onMinusClicked: root.brightness = Math.max(10, root.brightness - 5)
-                        onPlusClicked: root.brightness = Math.min(100, root.brightness + 5)
+                        onMinusClicked: settingsManager.decreaseBrightness()
+                        onPlusClicked: settingsManager.increaseBrightness()
                     }
 
                     AdjustRow {
@@ -375,8 +375,8 @@ Item {
                         title: "SYSTEM VOLUME"
                         value: root.systemVolume + "%"
                         percentValue: root.systemVolume
-                        onMinusClicked: root.systemVolume = Math.max(0, root.systemVolume - 5)
-                        onPlusClicked: root.systemVolume = Math.min(100, root.systemVolume + 5)
+                        onMinusClicked: settingsManager.decreaseSystemVolume()
+                        onPlusClicked: settingsManager.increaseSystemVolume()
                     }
 
                     Rectangle {
