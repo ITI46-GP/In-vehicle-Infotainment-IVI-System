@@ -78,7 +78,7 @@ private:
     BtPlayer        *m_bt          = nullptr;
     AudioSourceBase *m_current     = nullptr;
 
-    QString m_currentSourceName = QStringLiteral("Radio");
+    QString m_currentSourceName;
     float   m_volume = 0.5f;
     bool    m_muted  = false;
 };

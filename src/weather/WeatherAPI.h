@@ -26,10 +26,10 @@ private:
 
     QString city_name;
     QString weather;
-    int humidity;
-    double temperature;
+    int humidity = 0;
+    double temperature = 0.0;
     QString icon;
-    double windSpeed;
+    double windSpeed = 0.0;
     QVariantList forecastList;
 
 public:
