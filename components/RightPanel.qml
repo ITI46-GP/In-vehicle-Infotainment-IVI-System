@@ -21,25 +21,34 @@ Item {
     readonly property real mediaHeight: compact ? 126 : 132
 
     // Live media mock state
+    property bool isPlaying: true
     property int trackIndex: 0
+    property real mediaProgress: 0.42
 
     property var playlist: [
         { "title": "When I Was A Child", "artist": "Jerry Max", "album": "Solar" },
         { "title": "Night Drive", "artist": "Volt Audio", "album": "EV Sessions" },
         { "title": "Electric Roads", "artist": "Nova Lane", "album": "Afterglow" }
     ]
-    property bool isPlaying: audioManager ? audioManager.playing : false
-    property string songTitle: audioManager ? audioManager.currentSongTitle : "No Media"
-    property string songArtist: ""
-    property string songAlbum: ""
-    property real mediaProgress: audioManager ? (audioManager.position / audioManager.duration) : 0
+
+    property string songTitle: playlist[trackIndex].title
+    property string songArtist: playlist[trackIndex].artist
+    property string songAlbum: playlist[trackIndex].album
 
     // Live navigation mock state
     property bool routeActive: false
+    property bool routeLoading: false
+    property string routeError: ""
+    property bool currentLocationValid: false
     property string currentLocation: "Current location"
     property string destination: ""
     property string etaText: "--"
     property string distanceText: "--"
+    property var routePath: []
+    readonly property bool hasRouteGeometry: routePath && routePath.length > 1
+    readonly property string displayRouteError: routeError.indexOf("API") !== -1
+                                               || routeError.indexOf("Routing service") !== -1
+                                               ? "" : routeError
 
     property bool childTapActive: false
 
@@ -86,13 +95,6 @@ Item {
     function previousTrack() {
         root.trackIndex = (root.trackIndex - 1 + root.playlist.length) % root.playlist.length
         root.mediaProgress = 0.0
-    }
-
-    function mockSearchDestination() {
-        root.destination = "Mountain View"
-        root.etaText = "22 min"
-        root.distanceText = "14.2 km"
-        root.routeActive = true
     }
 
     Column {
@@ -248,24 +250,18 @@ Item {
 
                 MediaControlButton {
                     icon: "‹"
-                    onClicked:{
-                        if (audioManager) audioManager.prev()
-                        }
+                    onClicked: root.previousTrack()
                 }
 
                 MediaControlButton {
                     icon: root.isPlaying ? "Ⅱ" : "▶"
                     active: true
-                    onClicked: {
-                        if (audioManager) audioManager.togglePlayPause()
-                    }
+                    onClicked: root.playPause()
                 }
 
                 MediaControlButton {
                     icon: "›"
-                    onClicked: {
-                    if (audioManager) audioManager.next()
-                }
+                    onClicked: root.nextTrack()
                 }
             }
 
@@ -323,271 +319,137 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                opacity: 0.68
+                opacity: 0.72
 
                 gradient: Gradient {
-                    GradientStop { position: 0.0; color: "#101A2A" }
-                    GradientStop { position: 0.55; color: "#0A1020" }
+                    GradientStop { position: 0.0; color: "#13202C" }
+                    GradientStop { position: 0.50; color: "#0B1020" }
                     GradientStop { position: 1.0; color: "#07000E" }
                 }
             }
 
-            Canvas {
-                id: mapCanvas
+            Column {
                 anchors.fill: parent
-                opacity: 0.86
-
-                Connections {
-                    target: root
-
-                    function onRouteActiveChanged() {
-                        mapCanvas.requestPaint()
-                    }
-                }
-
-                onPaint: {
-                    var ctx = getContext("2d")
-                    ctx.clearRect(0, 0, width, height)
-
-                    ctx.strokeStyle = "rgba(139, 92, 246, 0.20)"
-                    ctx.lineWidth = 1
-
-                    for (var x = 28; x < width; x += 58) {
-                        ctx.beginPath()
-                        ctx.moveTo(x, 0)
-                        ctx.lineTo(x, height)
-                        ctx.stroke()
-                    }
-
-                    for (var y = 42; y < height; y += 58) {
-                        ctx.beginPath()
-                        ctx.moveTo(0, y)
-                        ctx.lineTo(width, y)
-                        ctx.stroke()
-                    }
-
-                    ctx.strokeStyle = "rgba(203, 196, 205, 0.11)"
-                    ctx.lineWidth = 1
-
-                    ctx.beginPath()
-                    ctx.moveTo(0, height * 0.28)
-                    ctx.lineTo(width, height * 0.18)
-                    ctx.stroke()
-
-                    ctx.beginPath()
-                    ctx.moveTo(width * 0.12, 0)
-                    ctx.lineTo(width * 0.88, height)
-                    ctx.stroke()
-
-                    ctx.beginPath()
-                    ctx.moveTo(width * 0.85, 0)
-                    ctx.lineTo(width * 0.55, height)
-                    ctx.stroke()
-
-                    if (root.routeActive) {
-                        ctx.strokeStyle = "rgba(33, 212, 253, 0.24)"
-                        ctx.lineWidth = 9
-                        ctx.lineCap = "round"
-                        ctx.lineJoin = "round"
-
-                        ctx.beginPath()
-                        ctx.moveTo(width * 0.16, height * 0.84)
-                        ctx.bezierCurveTo(width * 0.33, height * 0.66,
-                                          width * 0.42, height * 0.48,
-                                          width * 0.58, height * 0.36)
-                        ctx.bezierCurveTo(width * 0.72, height * 0.27,
-                                          width * 0.78, height * 0.18,
-                                          width * 0.90, height * 0.10)
-                        ctx.stroke()
-
-                        ctx.strokeStyle = "#21D4FD"
-                        ctx.lineWidth = 4
-
-                        ctx.beginPath()
-                        ctx.moveTo(width * 0.16, height * 0.84)
-                        ctx.bezierCurveTo(width * 0.33, height * 0.66,
-                                          width * 0.42, height * 0.48,
-                                          width * 0.58, height * 0.36)
-                        ctx.bezierCurveTo(width * 0.72, height * 0.27,
-                                          width * 0.78, height * 0.18,
-                                          width * 0.90, height * 0.10)
-                        ctx.stroke()
-                    }
-                }
-            }
-
-            // Search / destination chip
-            Rectangle {
-                id: searchBar
-                height: root.compact ? 42 : 46
-                radius: root.compact ? 16 : 18
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: root.compact ? 14 : 16
-                color: searchTap.pressed ? "#171025" : "#080512"
-                border.color: searchTap.pressed ? root.violet : "#342544"
-                border.width: 1
-                opacity: 0.95
-
-                Text {
-                    anchors.left: parent.left
-                    anchors.leftMargin: root.compact ? 14 : 18
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: root.routeActive ? root.destination : "Search destination"
-                    color: root.routeActive ? "#F4EEF7" : root.muted
-                    font.pixelSize: root.compact ? 12 : 13
-                    font.bold: root.routeActive
-                    elide: Text.ElideRight
-                    width: parent.width - (root.compact ? 54 : 70)
-                }
-
-                Text {
-                    anchors.right: parent.right
-                    anchors.rightMargin: root.compact ? 14 : 18
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: root.routeActive ? "✓" : "+"
-                    color: root.routeActive ? root.cyan : root.text
-                    font.pixelSize: 20
-                    font.bold: true
-                    opacity: 0.9
-                }
-
-                TapHandler {
-                    id: searchTap
-                    gesturePolicy: TapHandler.ReleaseWithinBounds
-
-                    onPressedChanged: {
-                        if (pressed) {
-                            root.beginChildTap()
-                        } else {
-                            root.endChildTap()
-                        }
-                    }
-
-                    onTapped: {
-                        root.mockSearchDestination()
-                    }
-                }
-            }
-
-            // current location marker
-            Rectangle {
-                width: 18
-                height: 18
-                radius: 9
-                x: parent.width * 0.16 - width / 2
-                y: parent.height * 0.84 - height / 2
-                color: root.cyan
-                border.color: "#FFFFFF"
-                border.width: 2
-
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 38
-                    height: 38
-                    radius: 19
-                    color: root.cyan
-                    opacity: 0.16
-                }
-            }
-
-            // destination marker
-            Rectangle {
-                visible: root.routeActive
-                width: 18
-                height: 18
-                radius: 9
-                x: parent.width * 0.90 - width / 2
-                y: parent.height * 0.10 - height / 2
-                color: root.red
-                border.color: "#FFFFFF"
-                border.width: 2
-            }
-
-            // Current location label when no route
-            Rectangle {
-                visible: !root.routeActive
-                width: root.compact ? 176 : 190
-                height: root.compact ? 48 : 52
-                radius: root.compact ? 16 : 18
-                anchors.left: parent.left
-                anchors.leftMargin: root.compact ? 14 : 18
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: root.compact ? 14 : 18
-                color: "#080512"
-                border.color: "#342544"
-                border.width: 1
-                opacity: 0.95
-
-                Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: root.compact ? 14 : 16
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: root.compact ? 3 : 4
-
-                    Text {
-                        text: "LOCATION"
-                        color: root.muted
-                        font.pixelSize: root.compact ? 8 : 9
-                        font.bold: true
-                        font.letterSpacing: root.compact ? 1.3 : 1.8
-                    }
-
-                    Text {
-                        text: root.currentLocation
-                        color: "#F4EEF7"
-                        font.pixelSize: root.compact ? 12 : 13
-                        font.bold: true
-                    }
-                }
-            }
-
-            // route summary when destination selected
-            Rectangle {
-                visible: root.routeActive
-                height: root.compact ? 50 : 54
-                radius: root.compact ? 18 : 20
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                anchors.leftMargin: root.compact ? 14 : 18
-                anchors.rightMargin: root.compact ? 14 : 18
-                anchors.bottomMargin: root.compact ? 14 : 18
-                color: "#080512"
-                border.color: "#342544"
-                border.width: 1
-                opacity: 0.95
+                anchors.margins: root.compact ? 13 : 16
+                spacing: root.compact ? 8 : 10
 
                 Row {
-                    anchors.centerIn: parent
-                    spacing: root.compact ? 10 : 24
+                    width: parent.width
+                    height: 28
 
-                    TripMetric {
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 92
+                        text: "NAVIGATION"
+                        color: root.muted
+                        font.pixelSize: 10
+                        font.bold: true
+                        font.letterSpacing: 2.0
+                    }
+
+                    RouteStatePill {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 92
+                        text: root.routeLoading ? "LOADING" : (root.routeActive ? "ACTIVE" : (root.displayRouteError.length > 0 ? "CHECK" : "READY"))
+                        active: root.routeActive || root.routeLoading
+                        alert: root.displayRouteError.length > 0
+                    }
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: root.compact ? 104 : 122
+                    radius: root.compact ? 19 : 22
+                    color: "#080512"
+                    border.color: root.displayRouteError.length > 0 ? root.red : (root.routeActive ? root.cyan : "#342544")
+                    border.width: 1
+
+                    RoutePreviewCanvas {
+                        anchors.fill: parent
+                        anchors.margins: 1
+                        routePath: root.routePath
+                        routeActive: root.routeActive
+                        routeLoading: root.routeLoading
+                        routeError: root.displayRouteError
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: "#05020B"
+                        opacity: 0.18
+                    }
+
+                    Column {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.leftMargin: root.compact ? 12 : 14
+                        anchors.rightMargin: root.compact ? 12 : 14
+                        anchors.bottomMargin: root.compact ? 10 : 12
+                        spacing: 3
+
+                        Text {
+                            width: parent.width
+                            text: root.displayRouteError.length > 0
+                                  ? root.displayRouteError
+                                  : (root.routeLoading ? "Preparing route" : (root.routeActive ? root.destination : "Open route planner"))
+                            color: root.displayRouteError.length > 0 ? root.red : "#F4EEF7"
+                            font.pixelSize: root.compact ? 13 : 15
+                            font.bold: true
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: root.currentLocationValid ? "GPS REAL" : "GPS FALLBACK"
+                            color: root.currentLocationValid ? root.cyan : root.muted
+                            font.pixelSize: 10
+                            font.bold: true
+                            font.letterSpacing: 1.4
+                        }
+                    }
+                }
+
+                Row {
+                    width: parent.width
+                    height: root.compact ? 54 : 60
+                    spacing: root.compact ? 8 : 10
+
+                    RouteMetricTile {
+                        width: (parent.width - parent.spacing * 2) / 3
                         title: "ETA"
-                        value: root.etaText
+                        value: root.routeLoading ? "..." : root.etaText
                     }
 
-                    Rectangle {
-                        width: 1
-                        height: 22
-                        color: "#342544"
+                    RouteMetricTile {
+                        width: (parent.width - parent.spacing * 2) / 3
+                        title: "DIST"
+                        value: root.routeLoading ? "..." : root.distanceText
                     }
 
-                    TripMetric {
-                        title: "DISTANCE"
-                        value: root.distanceText
+                    RouteMetricTile {
+                        width: (parent.width - parent.spacing * 2) / 3
+                        title: "PATH"
+                        value: root.routeLoading ? "..." : (root.hasRouteGeometry ? "REAL" : "--")
                     }
+                }
 
-                    Rectangle {
-                        width: 1
-                        height: 22
-                        color: "#342544"
-                    }
+                Rectangle {
+                    width: parent.width
+                    height: 36
+                    radius: 18
+                    color: mapTap.pressed ? root.violet : "#171025"
+                    border.color: mapTap.pressed ? "#B99CFF" : "#342544"
+                    border.width: 1
 
-                    TripMetric {
-                        title: "DEST"
-                        value: root.destination
+                    Text {
+                        anchors.centerIn: parent
+                        text: "OPEN MAP"
+                        color: "#F4EEF7"
+                        font.pixelSize: 10
+                        font.bold: true
+                        font.letterSpacing: 1.5
                     }
                 }
             }
@@ -659,6 +521,188 @@ Item {
 
             onTapped: {
                 mediaBtn.clicked()
+            }
+        }
+    }
+
+    component RouteStatePill: Rectangle {
+        id: statePill
+        property string text: ""
+        property bool active: false
+        property bool alert: false
+
+        height: 28
+        radius: 14
+        color: statePill.alert ? "#24090E" : (statePill.active ? "#10202A" : "#171025")
+        border.color: statePill.alert ? root.red : (statePill.active ? root.cyan : "#342544")
+        border.width: 1
+
+        Text {
+            anchors.centerIn: parent
+            text: statePill.text
+            color: statePill.alert ? root.red : (statePill.active ? root.cyan : root.muted)
+            font.pixelSize: 9
+            font.bold: true
+            font.letterSpacing: 1.2
+        }
+    }
+
+    component RoutePreviewCanvas: Canvas {
+        id: preview
+        property var routePath: []
+        property bool routeActive: false
+        property bool routeLoading: false
+        property string routeError: ""
+
+        onRoutePathChanged: requestPaint()
+        onRouteActiveChanged: requestPaint()
+        onRouteLoadingChanged: requestPaint()
+        onRouteErrorChanged: requestPaint()
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+
+        onPaint: {
+            var ctx = getContext("2d")
+            ctx.clearRect(0, 0, width, height)
+
+            var bg = ctx.createLinearGradient(0, 0, width, height)
+            bg.addColorStop(0, "#0B1520")
+            bg.addColorStop(0.55, "#070A13")
+            bg.addColorStop(1, "#130817")
+            ctx.fillStyle = bg
+            ctx.fillRect(0, 0, width, height)
+
+            var hasGeometry = preview.routePath && preview.routePath.length > 1
+            if (!hasGeometry) {
+                ctx.save()
+                ctx.fillStyle = preview.routeError.length > 0 ? root.red : (preview.routeLoading ? root.cyan : root.muted)
+                ctx.globalAlpha = preview.routeLoading ? 0.42 : 0.26
+                ctx.beginPath()
+                ctx.arc(width * 0.24, height * 0.42, 5, 0, Math.PI * 2)
+                ctx.arc(width * 0.76, height * 0.34, 5, 0, Math.PI * 2)
+                ctx.fill()
+                ctx.globalAlpha = 0.18
+                ctx.strokeStyle = root.muted
+                ctx.lineWidth = 2
+                var startX = width * 0.24
+                var startY = height * 0.42
+                var endX = width * 0.76
+                var endY = height * 0.34
+                for (var s = 0; s < 7; ++s) {
+                    var t0 = s / 7
+                    var t1 = t0 + 0.07
+                    ctx.beginPath()
+                    ctx.moveTo(startX + (endX - startX) * t0, startY + (endY - startY) * t0)
+                    ctx.lineTo(startX + (endX - startX) * t1, startY + (endY - startY) * t1)
+                    ctx.stroke()
+                }
+                ctx.restore()
+                return
+            }
+
+            var minLat = 90
+            var maxLat = -90
+            var minLon = 180
+            var maxLon = -180
+            for (var r = 0; r < preview.routePath.length; ++r) {
+                var pointData = preview.routePath[r]
+                var lat = Number(pointData.latitude)
+                var lon = Number(pointData.longitude)
+                minLat = Math.min(minLat, lat)
+                maxLat = Math.max(maxLat, lat)
+                minLon = Math.min(minLon, lon)
+                maxLon = Math.max(maxLon, lon)
+            }
+
+            var latSpan = Math.max(0.0001, maxLat - minLat)
+            var lonSpan = Math.max(0.0001, maxLon - minLon)
+            var padX = width * 0.16
+            var padY = height * 0.18
+
+            function xFor(lonValue) {
+                return padX + ((lonValue - minLon) / lonSpan) * (width - padX * 2)
+            }
+
+            function yFor(latValue) {
+                return padY + ((maxLat - latValue) / latSpan) * (height - padY * 2)
+            }
+
+            function routeStroke(lineWidth, color, alpha) {
+                ctx.save()
+                ctx.globalAlpha = alpha
+                ctx.strokeStyle = color
+                ctx.lineWidth = lineWidth
+                ctx.lineCap = "round"
+                ctx.lineJoin = "round"
+                ctx.beginPath()
+                for (var i = 0; i < preview.routePath.length; ++i) {
+                    var coordinate = preview.routePath[i]
+                    var x = xFor(Number(coordinate.longitude))
+                    var y = yFor(Number(coordinate.latitude))
+                    if (i === 0) {
+                        ctx.moveTo(x, y)
+                    } else {
+                        ctx.lineTo(x, y)
+                    }
+                }
+                ctx.stroke()
+                ctx.restore()
+            }
+
+            routeStroke(9, "#02070D", 0.70)
+            routeStroke(5, root.cyan, 0.95)
+
+            var start = preview.routePath[0]
+            var end = preview.routePath[preview.routePath.length - 1]
+            ctx.save()
+            ctx.fillStyle = "#F4EEF7"
+            ctx.beginPath()
+            ctx.arc(xFor(Number(start.longitude)), yFor(Number(start.latitude)), 4, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.fillStyle = root.violet
+            ctx.beginPath()
+            ctx.arc(xFor(Number(end.longitude)), yFor(Number(end.latitude)), 5, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.restore()
+        }
+
+        Component.onCompleted: requestPaint()
+    }
+
+    component RouteMetricTile: Rectangle {
+        id: metricTile
+        property string title: ""
+        property string value: ""
+
+        height: root.compact ? 54 : 60
+        radius: root.compact ? 16 : 18
+        color: "#080512"
+        border.color: "#342544"
+        border.width: 1
+
+        Column {
+            anchors.centerIn: parent
+            width: parent.width - 10
+            spacing: 4
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: metricTile.title
+                color: root.muted
+                font.pixelSize: 8
+                font.bold: true
+                font.letterSpacing: 1.1
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width
+                text: metricTile.value
+                color: "#F4EEF7"
+                font.pixelSize: root.compact ? 11 : 12
+                font.bold: true
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
             }
         }
     }

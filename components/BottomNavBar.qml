@@ -19,11 +19,12 @@ Item {
     signal volumeUp()
     signal volumeDown()
 
+    // keep old signal so DashboardPage old handler will not break if still exists
     signal appsClicked()
 
-    property real driverTemp: (typeof HvacBackend !== "undefined") ? HvacBackend.driverTemp : 23.0
-    property real passengerTemp: (typeof HvacBackend !== "undefined") ? HvacBackend.passengerTemp : 21.0
-    property int volume: (typeof AudioBackend !== "undefined") ? AudioBackend.volume : 52
+    property int driverTemp: 20
+    property int passengerTemp: 20
+    property int volume: 52
 
     property color barBg: "#020106"
     property color line: "#24182F"
@@ -46,6 +47,7 @@ Item {
             opacity: 0.35
         }
 
+        // Must stay exactly in the center
         ClimateGroup {
             id: climateGroup
             width: 318
@@ -53,6 +55,7 @@ Item {
             anchors.centerIn: parent
         }
 
+        // Left side: Home / Weather / Settings
         Row {
             id: leftControls
             height: parent.height - 12
@@ -91,6 +94,7 @@ Item {
             }
         }
 
+        // Right side: Media / Volume / AI
         Row {
             id: rightControls
             height: parent.height - 12
@@ -151,12 +155,10 @@ Item {
                 value: root.driverTemp
 
                 onUpClicked: {
-                    if (typeof HvacBackend !== "undefined") HvacBackend.increaseDriverTemp()
                     root.driverTempUp()
                 }
 
                 onDownClicked: {
-                    if (typeof HvacBackend !== "undefined") HvacBackend.decreaseDriverTemp()
                     root.driverTempDown()
                 }
             }
@@ -174,12 +176,10 @@ Item {
                 value: root.passengerTemp
 
                 onUpClicked: {
-                    if (typeof HvacBackend !== "undefined") HvacBackend.increasePassengerTemp()
                     root.passengerTempUp()
                 }
 
                 onDownClicked: {
-                    if (typeof HvacBackend !== "undefined") HvacBackend.decreasePassengerTemp()
                     root.passengerTempDown()
                 }
             }
@@ -190,7 +190,8 @@ Item {
         id: temp
 
         property string title: ""
-        property real value: 70.0
+        property int value: 20
+        readonly property int displayValue: Math.max(16, Math.min(30, value))
 
         signal upClicked()
         signal downClicked()
@@ -207,7 +208,7 @@ Item {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: temp.value.toFixed(1) + "°"
+                text: temp.displayValue + "°"
                 color: "#F4EEF7"
                 font.pixelSize: 18
                 font.bold: true
@@ -471,11 +472,6 @@ Item {
                     direction: "up"
 
                     onClicked: {
-                        if (typeof AudioBackend !== "undefined") {
-                            AudioBackend.volume = Math.min(100, AudioBackend.volume + 5)
-                        } else {
-                            root.volume = Math.min(100, root.volume + 5)
-                        }
                         root.volumeUp()
                     }
                 }
@@ -493,11 +489,6 @@ Item {
                     direction: "down"
 
                     onClicked: {
-                        if (typeof AudioBackend !== "undefined") {
-                            AudioBackend.volume = Math.max(0, AudioBackend.volume - 5)
-                        } else {
-                            root.volume = Math.max(0, root.volume - 5)
-                        }
                         root.volumeDown()
                     }
                 }

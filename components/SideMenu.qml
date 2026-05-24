@@ -22,6 +22,11 @@ Item {
     property color violetSoft: "#6D3FB5"
     property color red: "#A6080D"
     property color cyan: "#21D4FD"
+    property string profileName: "Abdelfattah"
+    property string profileSummary: "Comfort mode · 15 messages"
+    property string assistantSummary: "Chat, voice control, vehicle diagnostics and smart navigation."
+    property string lightsSubtitle: "Headlights · ambient"
+    property string settingsSubtitle: "Vehicle and system"
 
     readonly property bool compact: height < 470
     readonly property real columnSpacing: compact ? 9 : 11
@@ -151,14 +156,14 @@ Item {
                 }
 
                 Text {
-                    text: "Hi, Abdelfattah"
+                    text: root.profileName.length > 0 ? "Hi, " + root.profileName : "Hi"
                     color: "#F4EEF7"
                     font.pixelSize: root.compact ? 17 : 22
                     font.bold: true
                 }
 
                 Text {
-                    text: "Comfort mode · 15 messages"
+                    text: root.profileSummary
                     color: root.muted
                     font.pixelSize: root.compact ? 10 : 12
                     opacity: 0.9
@@ -261,7 +266,7 @@ Item {
 
                 Text {
                     width: parent.width
-                    text: "Chat, voice control, vehicle diagnostics and smart navigation."
+                    text: root.assistantSummary
                     color: root.muted
                     font.pixelSize: root.compact ? 10 : 12
                     lineHeight: 1.25
@@ -297,7 +302,7 @@ Item {
 
         PremiumMenuButton {
             title: "LIGHTS"
-            subtitle: "Headlights · ambient"
+            subtitle: root.lightsSubtitle
             iconType: "light"
             onClicked: root.lightsClicked()
         }
@@ -311,7 +316,7 @@ Item {
 
         PremiumMenuButton {
             title: "SETTINGS"
-            subtitle: "Vehicle and system"
+            subtitle: root.settingsSubtitle
             iconType: "settings"
             onClicked: root.settingsClicked()
         }
