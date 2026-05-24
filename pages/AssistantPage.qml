@@ -18,17 +18,11 @@ Item {
     property color violet: "#8B5CF6"
     property color cyan: "#21D4FD"
 
-    property bool listening: false
-    property bool voiceEnabled: true
+    readonly property bool listening: assistantManager.listening
+    readonly property bool voiceEnabled: assistantManager.voiceEnabled
     property bool vehicleAccess: true
     property bool diagnosticsEnabled: true
     property string inputText: ""
-
-    onVoiceEnabledChanged: {
-        if (!voiceEnabled) {
-            listening = false
-        }
-    }
 
     Rectangle {
         anchors.fill: parent
@@ -227,14 +221,7 @@ Item {
                     active: root.listening
                     enabled: root.voiceEnabled
 
-                    onClicked: {
-                        if (!root.voiceEnabled) {
-                            root.listening = false
-                            return
-                        }
-
-                        root.listening = !root.listening
-                    }
+                    onClicked: assistantManager.toggleListening()
                 }
 
                 MiniStatusRow {
@@ -354,19 +341,19 @@ Item {
                             ChatBubble {
                                 width: parent.width
                                 fromUser: false
-                                message: "Hello Abdelfattah. I can help with vehicle status, navigation, climate and media."
+                                message: "Hello " + profileManager.activeProfileName + ". I can help with vehicle status, navigation, climate and media."
                             }
 
                             ChatBubble {
                                 width: parent.width
                                 fromUser: true
-                                message: "Check vehicle status."
+                                message: assistantManager.lastUserMessage
                             }
 
                             ChatBubble {
                                 width: parent.width
                                 fromUser: false
-                                message: "Battery healthy. Cabin ready. No critical warnings."
+                                message: assistantManager.lastAssistantReply
                             }
                         }
                     }
@@ -410,6 +397,7 @@ Item {
                             height: parent.height
                             title: "Status"
                             subtitle: "Vehicle check"
+                            onClicked: assistantManager.sendMessage("status")
                         }
                     }
 
@@ -423,13 +411,7 @@ Item {
                             height: parent.height
                             title: "Voice"
                             checked: root.voiceEnabled
-                            onClicked: {
-                                root.voiceEnabled = !root.voiceEnabled
-
-                                if (!root.voiceEnabled) {
-                                    root.listening = false
-                                }
-                            }
+                            onClicked: assistantManager.toggleVoiceEnabled()
                         }
 
                         ModeToggleCard {
@@ -493,6 +475,7 @@ Item {
                             }
 
                             onAccepted: {
+                                assistantManager.sendMessage(inputField.text)
                                 root.inputText = ""
                                 inputField.text = ""
                             }
@@ -508,6 +491,7 @@ Item {
                             text: "SEND"
 
                             onClicked: {
+                                assistantManager.sendMessage(inputField.text)
                                 root.inputText = ""
                                 inputField.text = ""
                             }
