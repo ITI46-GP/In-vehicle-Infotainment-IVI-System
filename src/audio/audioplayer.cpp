@@ -10,14 +10,10 @@ AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent)
     m_usb   = new UsbPlayer(this);
     m_bt    = new BtPlayer(this);
 
-    connect(m_bt, &BtPlayer::btSearchingChanged,
-            this, &AudioPlayer::btSearchingChanged);
-    connect(m_bt, &BtPlayer::btStatusChanged,
-            this, &AudioPlayer::btStatusChanged);
-    connect(m_bt, &BtPlayer::availableDevicesChanged,
-            this, &AudioPlayer::availableDevicesChanged);
-
-    //setSource(0);
+    connect(m_bt, &BtPlayer::btSearchingChanged, this, &AudioPlayer::btSearchingChanged);
+    connect(m_bt, &BtPlayer::btStatusChanged,this, &AudioPlayer::btStatusChanged);
+    connect(m_bt, &BtPlayer::availableDevicesChanged,this, &AudioPlayer::availableDevicesChanged);
+    
 }
 
 AudioPlayer::~AudioPlayer() {}
