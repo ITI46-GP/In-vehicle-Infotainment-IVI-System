@@ -17,11 +17,11 @@ Item {
     property color violet: "#8B5CF6"
     property color cyan: "#21D4FD"
 
-    property bool headlightsOn: true
-    property bool fogLightsOn: false
-    property bool cabinAmbientOn: true
-    property bool autoMode: true
-    property int ambientLevel: 64
+    readonly property bool headlightsOn: lightsController.headlightsOn
+    readonly property bool fogLightsOn: lightsController.fogLightsOn
+    readonly property bool cabinAmbientOn: lightsController.cabinAmbientOn
+    readonly property bool autoMode: lightsController.autoLightsOn
+    readonly property int ambientLevel: lightsController.ambientLevel
 
     Rectangle {
         anchors.fill: parent
@@ -205,13 +205,13 @@ Item {
                 TouchPillButton {
                     width: 128
                     text: root.headlightsOn ? "TURN OFF" : "TURN ON"
-                    onClicked: root.headlightsOn = !root.headlightsOn
+                    onClicked: lightsController.toggleHeadlights()
                 }
 
                 TouchPillButton {
                     width: 128
                     text: root.autoMode ? "AUTO ON" : "MANUAL"
-                    onClicked: root.autoMode = !root.autoMode
+                    onClicked: lightsController.toggleAutoLights()
                 }
             }
         }
@@ -309,7 +309,7 @@ Item {
                             title: "Headlights"
                             subtitle: "Main beam"
                             checked: root.headlightsOn
-                            onClicked: root.headlightsOn = !root.headlightsOn
+                            onClicked: lightsController.toggleHeadlights()
                         }
 
                         LightToggleCard {
@@ -318,7 +318,7 @@ Item {
                             title: "Fog Lights"
                             subtitle: "Low visibility"
                             checked: root.fogLightsOn
-                            onClicked: root.fogLightsOn = !root.fogLightsOn
+                            onClicked: lightsController.toggleFogLights()
                         }
 
                         LightToggleCard {
@@ -327,7 +327,7 @@ Item {
                             title: "Cabin Ambient"
                             subtitle: "Interior glow"
                             checked: root.cabinAmbientOn
-                            onClicked: root.cabinAmbientOn = !root.cabinAmbientOn
+                            onClicked: lightsController.toggleCabinAmbient()
                         }
 
                         LightToggleCard {
@@ -336,7 +336,7 @@ Item {
                             title: "Auto Mode"
                             subtitle: "Smart lighting"
                             checked: root.autoMode
-                            onClicked: root.autoMode = !root.autoMode
+                            onClicked: lightsController.toggleAutoLights()
                         }
                     }
 
@@ -388,7 +388,7 @@ Item {
                                     width: 42
                                     height: 26
                                     text: "-"
-                                    onClicked: root.ambientLevel = Math.max(0, root.ambientLevel - 8)
+                                    onClicked: lightsController.decreaseAmbientLevel()
                                 }
 
                                 Rectangle {
@@ -413,7 +413,7 @@ Item {
                                     width: 42
                                     height: 26
                                     text: "+"
-                                    onClicked: root.ambientLevel = Math.min(100, root.ambientLevel + 8)
+                                    onClicked: lightsController.increaseAmbientLevel()
                                 }
                             }
                         }

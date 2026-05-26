@@ -22,7 +22,7 @@ Window {
     // enable this flag on the embedded target for a borderless 7-inch display.
     // flags: Qt.FramelessWindowHint
 
-    property bool splashFinished: true
+    property bool splashFinished: false
 
     // This is our design resolution.
     // All screens/components are drawn inside this surface,
@@ -56,7 +56,6 @@ Window {
             visible: opacity > 0
 
             initialItem: dashboardComponent
-            //onMediaRequested: stackView.push(mediaComponent)
 
             Behavior on opacity {
                 NumberAnimation {
@@ -66,7 +65,7 @@ Window {
             }
         }
 
-             Component {
+        Component {
             id: dashboardComponent
 
             DashboardPage {
@@ -91,21 +90,19 @@ Window {
                     stackView.push(assistantComponent)
                 }
                 onMediaRequested: {
-                    console.log("Main: mediaRequested handler!")
                     keyboardOverlay.closeKeyboard()
                     stackView.push(mediaComponent)
                 }
-
                 onWeatherRequested: {
                     keyboardOverlay.closeKeyboard()
                     stackView.push(weatherComponent)
                 }
-
                 onClimateRequested: {
                     keyboardOverlay.closeKeyboard()
                     stackView.push(climateComponent)
                 }
             }
+
         }
 
         Component {
@@ -174,23 +171,36 @@ Window {
                 }
             }
         }
-        
         Component {
             id: mediaComponent
+
             MediaPage {
                 onBackClicked: {
-                    console.log("MediaPage backClicked!")
+                    keyboardOverlay.closeKeyboard()
                     if (stackView.depth > 1) {
                         stackView.pop()
                     }
                 }
             }
         }
-
         Component {
             id: weatherComponent
+
             WeatherPage {
                 onBackClicked: {
+                    keyboardOverlay.closeKeyboard()
+                    if (stackView.depth > 1) {
+                        stackView.pop()
+                    }
+                }
+            }
+        }
+        Component {
+            id: climateComponent
+
+            ClimatePage {
+                onBackClicked: {
+                    keyboardOverlay.closeKeyboard()
                     if (stackView.depth > 1) {
                         stackView.pop()
                     }
@@ -198,14 +208,20 @@ Window {
             }
         }
 
-        Component {
-            id: climateComponent
-            ClimatePage {
-                onBackClicked: {
-                    if (stackView.depth > 1) {
-                        stackView.pop()
-                    }
+        SplashScreen {
+            anchors.fill: parent
+            opacity: root.splashFinished ? 0 : 1
+            visible: opacity > 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 700
+                    easing.type: Easing.InOutQuad
                 }
+            }
+
+            onFinished: {
+                root.splashFinished = true
             }
         }
 

@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Effects
-import QtMultimedia
 
 Item {
     id: root
@@ -266,12 +265,11 @@ Item {
                     z: 1
                 }
 
-                VideoOutput {
+                Item {
                     id: videoOut
                     anchors.fill: parent
-                    visible: audioManager ? (audioManager.currentSource === "USB" && audioManager.isVideo) : false
+                    visible: false
                     z: 2
-                    Component.onCompleted: audioManager.bindVideoOutput(videoOut)
                 }
 
                 Image {

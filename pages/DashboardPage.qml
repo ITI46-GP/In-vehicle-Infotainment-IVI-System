@@ -12,8 +12,8 @@ Item {
     signal mapRequested()
     signal assistantRequested()
     signal mediaRequested()
-    signal climateRequested()
     signal weatherRequested()
+    signal climateRequested()
 
     readonly property real margin: Math.max(14, Math.min(18, width * 0.016))
     readonly property real gap: Math.max(12, Math.min(16, width * 0.014))
@@ -43,13 +43,14 @@ Item {
             GradientStop { position: 1.0; color: "#07000E" }
         }
     }
-
     TopStatusBar {
         id: topStatusBar
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
         height: dashboardRoot.topBarHeight
+        cabinMode: settingsManager.privacyMode ? "PRIVATE" : "EASY ENTRY"
+        network: settingsManager.wifiOn ? "Wi-Fi" : "LTE"
     }
 
     SideMenu {
@@ -58,12 +59,19 @@ Item {
         y: dashboardRoot.contentTop
         width: dashboardRoot.sideWidth
         height: dashboardRoot.contentHeight
+        profileName: profileManager.activeProfileName
+        profileSummary: profileManager.activeDriveMode + " · " + profileManager.activeSeatPreset + " · " + profileManager.activeDriverTemp + "°"
+        assistantSummary: !assistantManager.voiceEnabled
+                          ? "Voice off · chat available"
+                          : (assistantManager.listening ? "Listening now · assistant online" : "Voice ready · assistant online")
+        lightsSubtitle: (lightsController.headlightsOn ? "Headlights on" : "Headlights off") + " · ambient " + lightsController.ambientLevel + "%"
+        settingsSubtitle: settingsManager.darkMode ? "Dark mode · system" : "Light mode · system"
 
-        onProfileClicked:    dashboardRoot.profileRequested()
-        onAssistantClicked:  dashboardRoot.assistantRequested()
-        onLightsClicked:     dashboardRoot.lightsRequested()
-        onClimateClicked:    dashboardRoot.climateRequested()
-        onSettingsClicked:   dashboardRoot.settingsRequested()
+        onProfileClicked: dashboardRoot.profileRequested()
+        onAssistantClicked: dashboardRoot.assistantRequested()
+        onLightsClicked: dashboardRoot.lightsRequested()
+        onClimateClicked: dashboardRoot.climateRequested()
+        onSettingsClicked: dashboardRoot.settingsRequested()
     }
 
     VehicleOverviewCard {
@@ -72,6 +80,10 @@ Item {
         y: dashboardRoot.contentTop
         width: dashboardRoot.centerWidth
         height: dashboardRoot.contentHeight
+        driveMode: profileManager.activeDriveMode
+        lightState: lightsController.autoLightsOn ? "Auto" : (lightsController.headlightsOn ? "On" : "Off")
+        systemState: profileManager.activeSeatPreset
+
     }
 
     RightPanel {
@@ -80,15 +92,20 @@ Item {
         y: dashboardRoot.contentTop
         width: dashboardRoot.rightWidth
         height: dashboardRoot.contentHeight
+        routeActive: navigationManager.routeActive
+        routeLoading: navigationManager.routeLoading
+        routeError: navigationManager.routeError
+        currentLocationValid: navigationManager.currentLocationValid
+        destination: navigationManager.destination
+        etaText: navigationManager.routeActive ? navigationManager.etaMinutes + " min" : "--"
+        distanceText: navigationManager.routeActive ? navigationManager.distanceKm.toFixed(1) + " km" : "--"
+        routePath: navigationManager.routePath
+        songTitle: profileManager.activeMediaPreset
+        songArtist: profileManager.activeMediaSource
+        songAlbum: profileManager.activeDriveMode
 
-        onMediaClicked: {
-        console.log("RightPanel mediaClicked!")
-        dashboardRoot.mediaRequested()
-    }
-    onMapClicked: {
-        console.log("RightPanel mapClicked!")
-        dashboardRoot.mapRequested()
-    }
+        onMediaClicked: dashboardRoot.mediaRequested()
+        onMapClicked: dashboardRoot.mapRequested()
     }
 
     BottomNavBar {
@@ -100,22 +117,24 @@ Item {
         anchors.rightMargin: dashboardRoot.margin
         anchors.bottomMargin: dashboardRoot.margin
         height: dashboardRoot.bottomBarHeight
+        driverTemp: profileManager.activeDriverTemp
+        passengerTemp: profileManager.activePassengerTemp
+        volume: profileManager.activeVolume
 
-        onHomeClicked:      console.log("Home clicked")
-        onClimateClicked:   dashboardRoot.climateRequested()
-        onMediaClicked: {
-        console.log("BottomNavBar mediaClicked!")
-        dashboardRoot.mediaRequested()
-        }
-        onWeatherClicked:   dashboardRoot.weatherRequested()
-        onSettingsClicked:  dashboardRoot.settingsRequested()
+        onSettingsClicked: dashboardRoot.settingsRequested()
+        onHomeClicked: console.log("Home clicked")
+        onClimateClicked: dashboardRoot.climateRequested()
+        onMediaClicked: dashboardRoot.mediaRequested()
+        onWeatherClicked: dashboardRoot.weatherRequested()
+        onAppsClicked: console.log("Apps clicked")
         onAssistantClicked: dashboardRoot.assistantRequested()
 
-        onDriverTempUp:     if (HvacBackend) HvacBackend.increaseDriverTemp()
-        onDriverTempDown:   if (HvacBackend) HvacBackend.decreaseDriverTemp()
-        onPassengerTempUp:  if (HvacBackend) HvacBackend.increasePassengerTemp()
-        onPassengerTempDown: if (HvacBackend) HvacBackend.decreasePassengerTemp()
-        onVolumeUp:         console.log("Volume up")
-        onVolumeDown:       console.log("Volume down")
+        onDriverTempUp: profileManager.setActiveDriverTemp(profileManager.activeDriverTemp + 1)
+        onDriverTempDown: profileManager.setActiveDriverTemp(profileManager.activeDriverTemp - 1)
+        onPassengerTempUp: profileManager.setActivePassengerTemp(profileManager.activePassengerTemp + 1)
+        onPassengerTempDown: profileManager.setActivePassengerTemp(profileManager.activePassengerTemp - 1)
+        onVolumeUp: profileManager.setActiveVolume(profileManager.activeVolume + 5)
+        onVolumeDown: profileManager.setActiveVolume(profileManager.activeVolume - 5)
     }
+
 }

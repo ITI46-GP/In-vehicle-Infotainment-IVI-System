@@ -37,6 +37,7 @@ private:
     QString city_name;
     // Stores weather description (e.g. clear sky)
     QString weather;
+<<<<<<< HEAD
     // Stores humidity percentage
     int humidity;
     // Stores current temperature
@@ -46,6 +47,12 @@ private:
     // Stores wind speed value
     double windSpeed;
     // Stores forecast data list for upcoming days
+=======
+    int humidity = 0;
+    double temperature = 0.0;
+    QString icon;
+    double windSpeed = 0.0;
+>>>>>>> origin/abdelfattah
     QVariantList forecastList;
 
 public:
