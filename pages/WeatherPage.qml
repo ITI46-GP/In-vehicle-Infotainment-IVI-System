@@ -7,15 +7,24 @@ Item {
     width: 1024
     height: 600
 
+    // Signal emitted when back button is pressed
     signal backClicked()
 
+    // Main page background color
     readonly property color bgColor: "#07000E"
+    // Main card/panel background color
     readonly property color panelColor: "#090613"
+    // Lighter panel color for interactive elements
     readonly property color panelColorLight: "#1C162B"
+    // Border and divider color
     readonly property color borderColor: "#342544"
+    // Primary text color
     readonly property color textColor: "#CBC4CD"
+    // Secondary/dim text color
     readonly property color textColorDim: "#8A8294"
+    // Main accent/highlight color
     readonly property color accentViolet: "#8B5CF6"
+    // Secondary accent/glow color
     readonly property color accentCyan: "#06B6D4"
 
     Rectangle {
@@ -33,10 +42,12 @@ Item {
         width: 44
         height: 44
         radius: 12
+        // Change button color when pressed
         color: backTap.pressed ? Qt.lighter(root.panelColorLight, 1.3) : root.panelColorLight
         border.color: root.borderColor
         border.width: 1
 
+        // Handle touch/click interaction   
         TapHandler {
             id: backTap
             onTapped: root.backClicked()
@@ -63,7 +74,9 @@ Item {
 
     // Fetch weather on startup
     Component.onCompleted: {
+        // Check if weatherApi exists and no city is loaded yet
         if (weatherApi && weatherApi.cityName === "") {
+            // Request weather data for Giza
             weatherApi.fetchWeather("Giza")
         }
     }
