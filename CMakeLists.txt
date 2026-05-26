@@ -5,6 +5,7 @@ project(GP_IVI VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia QuickEffects Bluetooth DBus QuickControls2)
+
 qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appGP_IVI
