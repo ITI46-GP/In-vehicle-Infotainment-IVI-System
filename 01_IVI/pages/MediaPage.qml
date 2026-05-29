@@ -308,7 +308,7 @@ Item {
                 }
 
                 Rectangle {
-                    visible: (videoOut !== null) && (audioManager.currentSource === "USB" && audioManager.isVideo)
+                    visible: !videoOut.visible
                     anchors.centerIn: parent
                     width: artImg.width + 18; height: width; radius: width / 2
                     color: "transparent"
