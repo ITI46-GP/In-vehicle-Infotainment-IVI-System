@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Effects
+import QtMultimedia
 
 Item {
     id: root
@@ -99,7 +100,7 @@ Item {
                         border.color: "#A6080D40"; border.width: 1
 
                         Image {
-                            source: "qrc:/qt/qml/GP_IVI/assets/images/iti.png"
+                            source: "qrc:/qt/qml/GP_IVI/assets/icons/2285924901582793664-128.png"
                             anchors.centerIn: parent
                             width: 22; height: 22
                             fillMode: Image.PreserveAspectFit
@@ -238,26 +239,20 @@ Item {
             Layout.margins: 16
             spacing: 8
 
-            // Spacer for top alignment
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 44
-                Item { Layout.fillWidth: true }
-            }
-
-            // Album Art / Video Area
+            // --- Album Art / Video Area ---
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 radius: 20
                 clip: true
                 color: "#1C162B"
-                border.color: "#CBC4CD"; border.width: 1
+                border.color: "#342544"; border.width: 1
 
                 Rectangle {
                     anchors.top: parent.top
                     anchors.left: parent.left; anchors.right: parent.right
                     height: parent.height * 0.38; radius: 20
+                    visible: !videoOut.visible
                     gradient: Gradient {
                         GradientStop { position: 0.0; color: "#0A0A1B" }
                         GradientStop { position: 1.0; color: "transparent" }
@@ -265,22 +260,24 @@ Item {
                     z: 1
                 }
 
-                Item {
+                VideoOutput {
                     id: videoOut
                     anchors.fill: parent
-                    visible: false
+                    visible: audioManager ? (audioManager.currentSource === "USB" && audioManager.isVideo) : false
                     z: 2
+                    fillMode: VideoOutput.PreserveAspectFit
+                    Component.onCompleted: audioManager.bindVideoOutput(videoOut)
                 }
 
                 Image {
                     id: artImg
-                    source: "qrc:/qt/qml/GP_IVI/assets/images/iti.png"
+                    source: "qrc:/qt/qml/GP_IVI/assets/icons/2285924901582793664-128.png"
                     anchors.centerIn: parent
                     width: Math.min(parent.width * 0.52, parent.height * 0.72)
                     height: width
                     fillMode: Image.PreserveAspectFit
                     opacity: 0.95
-                    visible: videoOut ? !videoOut.visible : true
+                    visible: !videoOut.visible
                     z: 2
                 }
 
@@ -288,6 +285,7 @@ Item {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left; anchors.right: parent.right
                     height: parent.height * 0.5
+                    visible: !videoOut.visible
                     z: 3
                     gradient: Gradient {
                         GradientStop { position: 0.0; color: "transparent" }
@@ -297,7 +295,7 @@ Item {
                 }
 
                 Rectangle {
-                    visible: audioManager.btSearching
+                    visible: audioManager.btSearching && !videoOut.visible
                     anchors.centerIn: parent
                     width: artImg.width + 22; height: width; radius: width / 2
                     color: "transparent"
@@ -310,7 +308,7 @@ Item {
                 }
 
                 Rectangle {
-                    visible: audioManager.playing && !audioManager.btSearching && !videoOut.visible
+                    visible: (videoOut !== null) && (audioManager.currentSource === "USB" && audioManager.isVideo)
                     anchors.centerIn: parent
                     width: artImg.width + 18; height: width; radius: width / 2
                     color: "transparent"
@@ -329,6 +327,7 @@ Item {
                     anchors.bottomMargin: 14
                     anchors.leftMargin: 18; anchors.rightMargin: 18
                     spacing: 6; z: 5
+                    visible: !videoOut.visible
 
                     Text {
                         text: audioManager.currentSongTitle
@@ -370,7 +369,7 @@ Item {
             Rectangle {
                 visible: audioManager.currentSource === "USB" || audioManager.currentSource === "Radio"
                 Layout.fillWidth: true
-                Layout.preferredHeight: 88
+                Layout.preferredHeight: 54
                 radius: 14
                 color: "#1C162B55"
                 border.color: "#0A0A1B"; border.width: 1
@@ -556,16 +555,18 @@ Item {
                             colorizationColor: audioManager.muted ? "#A6080D" : "#CBC4CD"
                         }
                         TapHandler {
-                            onTapped: audioManager.setMuted(!audioManager.muted)
+                            onTapped: manager.setMuted(!audioManager.muted)
                         }
                     }
 
                     Slider {
                         id: volSlider
                         Layout.fillWidth: true
-                        from: 0.0; to: 1.0
-                        value: audioManager.volume
-                        onMoved: audioManager.setVolume(value)
+                        from: 0; to: 100
+                        value: profileManager.activeVolume
+                        onMoved: {
+                            profileManager.setActiveVolume(value)
+                        }
 
                         background: Rectangle {
                             implicitHeight: 5; radius: 3; color: "#1C162B"
@@ -614,7 +615,7 @@ Item {
                     }
 
                     Text {
-                        text: Math.round(audioManager.volume * 100) + "%"
+                        text: Math.round(profileManager.activeVolume) + "%"
                         color: "#A6080D"; font.pixelSize: 10
                         Layout.preferredWidth: 28
                         horizontalAlignment: Text.AlignRight

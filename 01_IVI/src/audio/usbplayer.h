@@ -9,7 +9,6 @@
 class UsbPlayer : public AudioSourceBase
 {
     Q_OBJECT
-    Q_PROPERTY(bool isVideo READ isVideo NOTIFY isVideoChanged)
 
 public:
     explicit UsbPlayer(QObject *parent = nullptr);

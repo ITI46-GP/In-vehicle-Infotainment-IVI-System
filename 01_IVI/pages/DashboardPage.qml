@@ -60,7 +60,9 @@ Item {
         width: dashboardRoot.sideWidth
         height: dashboardRoot.contentHeight
         profileName: profileManager.activeProfileName
-        profileSummary: profileManager.activeDriveMode + " · " + profileManager.activeSeatPreset + " · " + profileManager.activeDriverTemp + "°"
+
+        profileSummary: profileManager.activeDriveMode + " · " + profileManager.activeSeatPreset + " · " + HvacBackend.driverTemp + "°"        
+        
         assistantSummary: !assistantManager.voiceEnabled
                           ? "Voice off · chat available"
                           : (assistantManager.listening ? "Listening now · assistant online" : "Voice ready · assistant online")
@@ -117,8 +119,8 @@ Item {
         anchors.rightMargin: dashboardRoot.margin
         anchors.bottomMargin: dashboardRoot.margin
         height: dashboardRoot.bottomBarHeight
-        driverTemp: profileManager.activeDriverTemp
-        passengerTemp: profileManager.activePassengerTemp
+        driverTemp: HvacBackend.driverTemp
+        passengerTemp: HvacBackend.passengerTemp
         volume: profileManager.activeVolume
 
         onSettingsClicked: dashboardRoot.settingsRequested()
@@ -129,10 +131,10 @@ Item {
         onAppsClicked: console.log("Apps clicked")
         onAssistantClicked: dashboardRoot.assistantRequested()
 
-        onDriverTempUp: profileManager.setActiveDriverTemp(profileManager.activeDriverTemp + 1)
-        onDriverTempDown: profileManager.setActiveDriverTemp(profileManager.activeDriverTemp - 1)
-        onPassengerTempUp: profileManager.setActivePassengerTemp(profileManager.activePassengerTemp + 1)
-        onPassengerTempDown: profileManager.setActivePassengerTemp(profileManager.activePassengerTemp - 1)
+        onDriverTempUp: HvacBackend.setDriverTemp(HvacBackend.driverTemp + 1)
+        onDriverTempDown: HvacBackend.setDriverTemp(HvacBackend.driverTemp - 1)
+        onPassengerTempUp: HvacBackend.setPassengerTemp(HvacBackend.passengerTemp + 1)
+        onPassengerTempDown: HvacBackend.setPassengerTemp(HvacBackend.passengerTemp - 1)
         onVolumeUp: profileManager.setActiveVolume(profileManager.activeVolume + 5)
         onVolumeDown: profileManager.setActiveVolume(profileManager.activeVolume - 5)
     }

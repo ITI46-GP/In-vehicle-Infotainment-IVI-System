@@ -38,10 +38,19 @@ void UsbPlayer::setVideoSink(QVideoSink* sink)
 void UsbPlayer::activate()
 {
     scanUsb();
-    if (!m_files.isEmpty())
-        playTrack(0);
-    else
+    if (!m_files.isEmpty()) {
+        m_index = 0;
+        QString fileName = m_files.at(m_index);
+        QString ext = fileName.section('.', -1).toLower();
+
+        bool video = (ext == "mp4" || ext == "mkv" || ext == "avi" || ext == "mov" || ext == "wmv");
+        setIsVideo(video);
+
+        setSongTitle(fileName.section('.', 0, -2));
+        m_player->setSource(QUrl::fromLocalFile(m_usbPath + "/" + fileName));
+    } else {
         setSongTitle("No Music Found on USB");
+    }
 }
 
 void UsbPlayer::deactivate()

@@ -10,7 +10,7 @@
 #include "backend/SettingsManager.h"
 #include "src/climate/hvaccontroller.h"
 #include "src/weather/WeatherAPI.h"
-
+#include "src/audio/audioplayer.h"
 #ifdef GP_IVI_USE_QT_MULTIMEDIA_AUDIO
 #include "src/audio/audioplayer.h"
 #else
@@ -75,6 +75,18 @@ int main(int argc, char *argv[])
             navigationManager.setRouteDestination(destination);
         }
     });
+    QObject::connect(&profileManager, &ProfileManager::activeDriverTempChanged, &hvacBackend, [&]() {
+        hvacBackend.setDriverTemp(profileManager.activeDriverTemp()); 
+    });
+
+    QObject::connect(&profileManager, &ProfileManager::activePassengerTempChanged, &hvacBackend, [&]() {
+        hvacBackend.setPassengerTemp(profileManager.activePassengerTemp());
+    });
+
+    QObject::connect(&audioManager, &AudioPlayer::songTitleChanged, &profileManager, [&]() {
+        profileManager.setActiveMediaPreset(audioManager.currentSongTitle());
+    });
+    
 
     settingsManager.setDarkMode(profileManager.activeDarkMode());
     lightsController.setAmbientLevel(profileManager.activeAmbientLevel());

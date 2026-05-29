@@ -9,30 +9,17 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appGP_IVI
     main.cpp
-    backend/AssistantManager.cpp
-    backend/AssistantManager.h
-    backend/LightsController.cpp
-    backend/LightsController.h
-    backend/NavigationManager.cpp
-    backend/NavigationManager.h
-    backend/ProfileManager.cpp
-    backend/ProfileManager.h
-    backend/SettingsManager.cpp
-    backend/SettingsManager.h
-    src/weather/WeatherAPI.cpp
-    src/weather/WeatherAPI.h
-    src/climate/hvaccontroller.cpp
-    src/climate/hvaccontroller.h
 )
 
 target_include_directories(appGP_IVI PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/audio
     ${CMAKE_CURRENT_SOURCE_DIR}/src/weather
     ${CMAKE_CURRENT_SOURCE_DIR}/src/climate
+    ${CMAKE_CURRENT_SOURCE_DIR}/backend
 )
 
 if(TARGET Qt6::Multimedia AND TARGET Qt6::DBus)
-    target_sources(appGP_IVI PRIVATE
+    set(AUDIO_SOURCES
         src/audio/audioplayer.cpp
         src/audio/audioplayer.h
         src/audio/audiosourcebase.cpp
@@ -48,7 +35,7 @@ if(TARGET Qt6::Multimedia AND TARGET Qt6::DBus)
     )
     target_compile_definitions(appGP_IVI PRIVATE GP_IVI_USE_QT_MULTIMEDIA_AUDIO)
 else()
-    target_sources(appGP_IVI PRIVATE
+    set(AUDIO_SOURCES
         src/audio/AudioCompatManager.cpp
         src/audio/AudioCompatManager.h
     )
@@ -79,11 +66,13 @@ qt_add_qml_module(appGP_IVI
         components/BluetoothSheet.qml
         components/RadioView.qml
         components/UsbView.qml
+
     RESOURCES
         assets/images/iti_logo.png
         assets/images/tesla.png
         assets/images/iti.png
         assets/images/car_climate.png
+        assets/icons/2285924901582793664-128.png
         assets/icons/car_home.svg
         assets/icons/ai_assistant.svg
         assets/icons/climate_fan.svg
@@ -102,23 +91,38 @@ qt_add_qml_module(appGP_IVI
         assets/icons/vent.png
         assets/icons/vent_blow.png
         assets/icons/windscreen-air.png
+
+    SOURCES
+        ${AUDIO_SOURCES}
+        src/weather/WeatherAPI.h         
+        src/weather/WeatherAPI.cpp
+        src/climate/hvaccontroller.h             
+        src/climate/hvaccontroller.cpp
+        backend/AssistantManager.cpp
+        backend/AssistantManager.h
+        backend/LightsController.cpp
+        backend/LightsController.h
+        backend/NavigationManager.cpp
+        backend/NavigationManager.h
+        backend/ProfileManager.cpp
+        backend/ProfileManager.h
+        backend/SettingsManager.cpp
+        backend/SettingsManager.h
 )
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
 set_target_properties(appGP_IVI PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appGP_IVI
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
+
 target_link_libraries(appGP_IVI
     PRIVATE
         Qt6::Core
         Qt6::Quick
         Qt6::Network
+        Qt6::Bluetooth
 )
 
 if(TARGET Qt6::QuickControls2)
@@ -137,19 +141,13 @@ if(TARGET Qt6::Multimedia AND TARGET Qt6::DBus)
 endif()
 
 if(TARGET Qt6::Positioning)
-    target_link_libraries(appGP_IVI
-        PRIVATE
-            Qt6::Positioning
-    )
+    target_link_libraries(appGP_IVI PRIVATE Qt6::Positioning)
 else()
     message(WARNING "QtPositioning is not installed in this Qt kit; MapPage will show GPS FALLBACK until a location is provided.")
 endif()
 
 if(TARGET Qt6::Location)
-    target_link_libraries(appGP_IVI
-        PRIVATE
-            Qt6::Location
-    )
+    target_link_libraries(appGP_IVI PRIVATE Qt6::Location)
 else()
     message(WARNING "QtLocation is not installed in this Qt kit; MapPage will use its clean QML fallback surface.")
 endif()

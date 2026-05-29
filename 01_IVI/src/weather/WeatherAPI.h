@@ -28,7 +28,7 @@ private:
     // Handles all network requests to the weather API
     QNetworkAccessManager* manager;
     // API key used for OpenWeather requests
-    QString apiKey = "YOUR_API_KEY";
+    QString apiKey = "a535d6f8909944fbab017f765c2d80b1";
     // Stores the currently selected city
     QString currentCity;
     // Stores current request type (weather or forecast)
@@ -37,22 +37,11 @@ private:
     QString city_name;
     // Stores weather description (e.g. clear sky)
     QString weather;
-<<<<<<< HEAD
-    // Stores humidity percentage
-    int humidity;
-    // Stores current temperature
-    double temperature;
-    // Stores weather icon code
-    QString icon;
-    // Stores wind speed value
-    double windSpeed;
     // Stores forecast data list for upcoming days
-=======
     int humidity = 0;
     double temperature = 0.0;
     QString icon;
     double windSpeed = 0.0;
->>>>>>> origin/abdelfattah
     QVariantList forecastList;
 
 public:

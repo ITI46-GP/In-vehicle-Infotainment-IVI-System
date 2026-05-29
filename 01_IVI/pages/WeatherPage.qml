@@ -7,24 +7,15 @@ Item {
     width: 1024
     height: 600
 
-    // Signal emitted when back button is pressed
     signal backClicked()
 
-    // Main page background color
     readonly property color bgColor: "#07000E"
-    // Main card/panel background color
     readonly property color panelColor: "#090613"
-    // Lighter panel color for interactive elements
     readonly property color panelColorLight: "#1C162B"
-    // Border and divider color
     readonly property color borderColor: "#342544"
-    // Primary text color
     readonly property color textColor: "#CBC4CD"
-    // Secondary/dim text color
     readonly property color textColorDim: "#8A8294"
-    // Main accent/highlight color
     readonly property color accentViolet: "#8B5CF6"
-    // Secondary accent/glow color
     readonly property color accentCyan: "#06B6D4"
 
     Rectangle {
@@ -32,7 +23,6 @@ Item {
         color: root.bgColor
     }
 
-    // Back Button
     Rectangle {
         id: backBtn
         anchors.top: parent.top
@@ -42,12 +32,10 @@ Item {
         width: 44
         height: 44
         radius: 12
-        // Change button color when pressed
         color: backTap.pressed ? Qt.lighter(root.panelColorLight, 1.3) : root.panelColorLight
         border.color: root.borderColor
         border.width: 1
 
-        // Handle touch/click interaction   
         TapHandler {
             id: backTap
             onTapped: root.backClicked()
@@ -72,16 +60,12 @@ Item {
         font.bold: true
     }
 
-    // Fetch weather on startup
     Component.onCompleted: {
-        // Check if weatherApi exists and no city is loaded yet
         if (weatherApi && weatherApi.cityName === "") {
-            // Request weather data for Giza
             weatherApi.fetchWeather("Giza")
         }
     }
 
-    // Update forecast when ready
     Connections {
         target: weatherApi
         function onForecastReady() {
@@ -89,13 +73,13 @@ Item {
         }
     }
 
-    // Main Content
     Flickable {
+        id: mainFlickable
         anchors.top: backBtn.bottom
         anchors.topMargin: 16
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.bottom: keyboardContainer.visible ? keyboardContainer.top : parent.bottom
         anchors.margins: 16
         contentHeight: mainColumn.height
         clip: true
@@ -105,13 +89,12 @@ Item {
             width: parent.width
             spacing: 8
 
-            // Search Bar
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 44
                 radius: 22
                 color: root.panelColorLight
-                border.color: root.borderColor
+                border.color: searchField.activeFocus ? root.accentCyan : root.borderColor
                 border.width: 1
 
                 RowLayout {
@@ -132,6 +115,7 @@ Item {
                         Keys.onReturnPressed: {
                             if (text !== "" && weatherApi) {
                                 weatherApi.fetchWeather(text)
+                                searchField.focus = false
                             }
                         }
                     }
@@ -153,6 +137,7 @@ Item {
                             onTapped: {
                                 if (searchField.text !== "" && weatherApi) {
                                     weatherApi.fetchWeather(searchField.text)
+                                    searchField.focus = false
                                 }
                             }
                         }
@@ -160,7 +145,6 @@ Item {
                 }
             }
 
-            // City Name
             Text {
                 Layout.alignment: Qt.AlignHCenter
                 text: weatherApi ? (weatherApi.cityName || "Loading...") : "Loading..."
@@ -169,7 +153,6 @@ Item {
                 color: root.textColor
             }
 
-            // Temperature
             Text {
                 Layout.alignment: Qt.AlignHCenter
                 text: weatherApi && weatherApi.temperature ? Math.round(weatherApi.temperature) + "°C" : "--°C"
@@ -178,7 +161,6 @@ Item {
                 color: root.accentCyan
             }
 
-            // Weather Description
             Text {
                 Layout.alignment: Qt.AlignHCenter
                 text: weatherApi ? (weatherApi.weather || "") : ""
@@ -188,7 +170,6 @@ Item {
                 visible: weatherApi && weatherApi.weather ? true : false
             }
 
-            // Weather Details
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 70
@@ -258,7 +239,6 @@ Item {
                 }
             }
 
-            // Forecast Section
             Text {
                 text: "5-Day Forecast"
                 font.pixelSize: 16
@@ -267,7 +247,6 @@ Item {
                 visible: forecastList.count > 0
             }
 
-            // Forecast List
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 220
@@ -349,6 +328,185 @@ Item {
             }
 
             Item { height: 20 }
+        }
+    }
+
+    Rectangle {
+        id: keyboardContainer
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: 280
+        color: "#0b0813"
+        border.color: root.borderColor
+        border.width: 1
+        visible: searchField.activeFocus
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 10
+            spacing: 8
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                color: "#130f22"
+                radius: 8
+                border.color: root.borderColor
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 15
+                    anchors.rightMargin: 10
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: searchField.text === "" ? "Enter city name..." : searchField.text
+                        color: searchField.text === "" ? root.textColorDim : "#FFFFFF"
+                        font.pixelSize: 14
+                    }
+
+                    Rectangle {
+                        Layout.preferredWidth: 80
+                        Layout.preferredHeight: 30
+                        radius: 15
+                        color: root.accentCyan
+                        border.color: Qt.lighter(root.accentCyan, 1.2)
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "DONE"
+                            color: "#000000"
+                            font.bold: true
+                            font.pixelSize: 12
+                        }
+
+                        TapHandler {
+                            onTapped: {
+                                if (searchField.text !== "" && weatherApi) {
+                                    weatherApi.fetchWeather(searchField.text)
+                                }
+                                searchField.focus = false
+                            }
+                        }
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"]
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        radius: 10
+                        color: row1Tap.pressed ? "#251d3a" : "#171226"
+                        border.color: root.borderColor
+
+                        Text { anchors.centerIn: parent; text: modelData; color: "#FFFFFF"; font.pixelSize: 16; font.bold: true }
+                        TapHandler { id: row1Tap; onTapped: searchField.text += modelData }
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                Item { Layout.preferredWidth: 15 }
+                Repeater {
+                    model: ["A", "S", "D", "F", "G", "H", "J", "K", "L"]
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        radius: 10
+                        color: row2Tap.pressed ? "#251d3a" : "#171226"
+                        border.color: root.borderColor
+
+                        Text { anchors.centerIn: parent; text: modelData; color: "#FFFFFF"; font.pixelSize: 16; font.bold: true }
+                        TapHandler { id: row2Tap; onTapped: searchField.text += modelData }
+                    }
+                }
+                Item { Layout.preferredWidth: 15 }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                Item { Layout.preferredWidth: 40 }
+                Repeater {
+                    model: ["Z", "X", "C", "V", "B", "N", "M"]
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        radius: 10
+                        color: row3Tap.pressed ? "#251d3a" : "#171226"
+                        border.color: root.borderColor
+
+                        Text { anchors.centerIn: parent; text: modelData; color: "#FFFFFF"; font.pixelSize: 16; font.bold: true }
+                        TapHandler { id: row3Tap; onTapped: searchField.text += modelData }
+                    }
+                }
+                Item { Layout.preferredWidth: 40 }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                Rectangle {
+                    Layout.preferredWidth: 100
+                    Layout.preferredHeight: 42
+                    radius: 10
+                    color: clearTap.pressed ? "#3a1d28" : "#2a1520"
+                    border.color: "#542538"
+
+                    Text { anchors.centerIn: parent; text: "CLEAR"; color: "#FF79C6"; font.pixelSize: 12; font.bold: true }
+                    TapHandler { id: clearTap; onTapped: searchField.text = "" }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 42
+                    radius: 10
+                    color: spaceTap.pressed ? "#251d3a" : "#171226"
+                    border.color: root.borderColor
+
+                    Text { anchors.centerIn: parent; text: "SPACE"; color: root.textColorDim; font.pixelSize: 13; font.bold: true }
+                    TapHandler { id: spaceTap; onTapped: searchField.text += " " }
+                }
+
+                Rectangle {
+                    Layout.preferredWidth: 100
+                    Layout.preferredHeight: 42
+                    radius: 10
+                    color: backspaceTap.pressed ? "#251d3a" : "#171226"
+                    border.color: root.borderColor
+
+                    Text { anchors.centerIn: parent; text: "BACK"; color: "#FFFFFF"; font.pixelSize: 12; font.bold: true }
+                    TapHandler { id: backspaceTap; onTapped: searchField.text = searchField.text.slice(0, -1) }
+                }
+
+                Rectangle {
+                    Layout.preferredWidth: 100
+                    Layout.preferredHeight: 42
+                    radius: 10
+                    color: bottomDoneTap.pressed ? Qt.darker(root.accentCyan, 1.5) : root.panelColorLight
+                    border.color: root.accentCyan
+
+                    Text { anchors.centerIn: parent; text: "DONE"; color: root.accentCyan; font.pixelSize: 12; font.bold: true }
+                    TapHandler {
+                        id: bottomDoneTap
+                        onTapped: {
+                            if (searchField.text !== "" && weatherApi) {
+                                weatherApi.fetchWeather(searchField.text)
+                            }
+                            searchField.focus = false
+                        }
+                    }
+                }
+            }
         }
     }
 }

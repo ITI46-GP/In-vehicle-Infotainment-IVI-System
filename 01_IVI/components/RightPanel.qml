@@ -21,19 +21,11 @@ Item {
     readonly property real mediaHeight: compact ? 126 : 132
 
     // Live media mock state
-    property bool isPlaying: true
-    property int trackIndex: 0
-    property real mediaProgress: 0.42
-
-    property var playlist: [
-        { "title": "When I Was A Child", "artist": "Jerry Max", "album": "Solar" },
-        { "title": "Night Drive", "artist": "Volt Audio", "album": "EV Sessions" },
-        { "title": "Electric Roads", "artist": "Nova Lane", "album": "Afterglow" }
-    ]
-
-    property string songTitle: playlist[trackIndex].title
-    property string songArtist: playlist[trackIndex].artist
-    property string songAlbum: playlist[trackIndex].album
+    property bool isPlaying: audioManager.playing
+    property real mediaProgress: audioManager.duration > 0 ? (audioManager.position / audioManager.duration) : 0.0
+    property string songTitle: audioManager.currentSongTitle !== "" ? audioManager.currentSongTitle : "No Media Playing"
+    property string songArtist: audioManager.currentSource
+    property string songAlbum: "IVI System"
 
     // Live navigation mock state
     property bool routeActive: false
@@ -240,6 +232,7 @@ Item {
             }
 
             // bottom control strip
+            // bottom control strip Linked to C++
             Row {
                 id: mediaControls
                 anchors.left: album.right
@@ -250,18 +243,37 @@ Item {
 
                 MediaControlButton {
                     icon: "‹"
-                    onClicked: root.previousTrack()
+                    onClicked: audioManager.prev()
                 }
 
                 MediaControlButton {
-                    icon: root.isPlaying ? "Ⅱ" : "▶"
+                    icon: audioManager.playing ? "Ⅱ" : "▶"
                     active: true
-                    onClicked: root.playPause()
+                    onClicked: audioManager.togglePlayPause()
                 }
 
                 MediaControlButton {
                     icon: "›"
-                    onClicked: root.nextTrack()
+                    onClicked: audioManager.next()
+                }
+            }
+
+            // progress bar separated from buttons
+            Rectangle {
+                width: root.compact ? 52 : 86
+                height: 4
+                radius: 2
+                anchors.right: parent.right
+                anchors.rightMargin: root.compact ? 14 : 24
+                anchors.verticalCenter: mediaControls.verticalCenter
+                color: "#342544"
+
+                Rectangle {
+                    width: parent.width * root.mediaProgress
+                    height: parent.height
+                    radius: 2
+                    color: audioManager.playing ? root.cyan : root.muted
+                    opacity: audioManager.playing ? 0.9 : 0.45
                 }
             }
 

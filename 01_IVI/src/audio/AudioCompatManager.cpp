@@ -194,8 +194,16 @@ void AudioCompatManager::setBtStatus(const QString &status)
 void AudioCompatManager::updateSongTitle()
 {
     QString title;
+    bool videoStatus = false; 
+
     if (m_currentSource == QStringLiteral("USB")) {
-        title = QStringLiteral("USB Track %1").arg((m_trackIndex % 5) + 1);
+        int trackNum = (m_trackIndex % 5) + 1;
+        title = QStringLiteral("USB Track %1").arg(trackNum);
+        
+        // Simulating that Track 2 is a Video file
+        if (trackNum == 2) {
+            videoStatus = true;
+        }
     } else if (m_currentSource == QStringLiteral("Bluetooth")) {
         title = QStringLiteral("Bluetooth Audio");
     } else if (m_currentSource == QStringLiteral("Radio")) {
@@ -204,10 +212,13 @@ void AudioCompatManager::updateSongTitle()
         title = QStringLiteral("No Media");
     }
 
-    if (m_currentSongTitle == title) {
-        return;
+    if (m_currentSongTitle != title) {
+        m_currentSongTitle = title;
+        emit songTitleChanged();
     }
 
-    m_currentSongTitle = title;
-    emit songTitleChanged();
+    if (m_isVideo != videoStatus) {
+        m_isVideo = videoStatus;
+        emit isVideoChanged();
+    }
 }

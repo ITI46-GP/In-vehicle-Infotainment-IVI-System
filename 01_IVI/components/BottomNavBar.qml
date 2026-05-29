@@ -114,6 +114,9 @@ Item {
             VolumeControl {
                 width: 106
                 height: parent.height
+                volumeValue: root.volume
+                onIncreaseVolume: root.volumeUp()
+                onDecreaseVolume: root.volumeDown()
             }
 
             Separator {
@@ -428,6 +431,9 @@ Item {
 
     component VolumeControl: Item {
         id: vol
+        property int volumeValue: 52
+        signal increaseVolume()
+        signal decreaseVolume()
 
         Row {
             anchors.centerIn: parent
@@ -472,13 +478,13 @@ Item {
                     direction: "up"
 
                     onClicked: {
-                        root.volumeUp()
+                        vol.increaseVolume()
                     }
                 }
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: root.volume + "%"
+                    text: vol.volumeValue + "%"
                     color: "#F4EEF7"
                     font.pixelSize: 13
                     font.bold: true
@@ -489,7 +495,7 @@ Item {
                     direction: "down"
 
                     onClicked: {
-                        root.volumeDown()
+                        vol.decreaseVolume()
                     }
                 }
             }

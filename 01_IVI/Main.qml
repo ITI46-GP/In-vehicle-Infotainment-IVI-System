@@ -35,6 +35,16 @@ Window {
         color: "#07000E"
     }
 
+
+Connections {
+    target: profileManager
+    function onActiveVolumeChanged() {
+        if (audioManager) {
+            audioManager.setVolume(profileManager.activeVolume / 100.0)
+        }
+    }
+}
+
     Item {
         id: appSurface
 
@@ -260,3 +270,4 @@ Window {
         }
     }
 }
+
