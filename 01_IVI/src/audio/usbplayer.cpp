@@ -1,11 +1,14 @@
 #include "usbplayer.h"
 #include <QDir>
 #include <QUrl>
+#include <QDirIterator>
+#include <QFileInfo>
+#include <QDebug>
 
 UsbPlayer::UsbPlayer(QObject *parent)
     : AudioSourceBase(parent)
     , m_player(new QMediaPlayer(this))
-    , m_usbPath("/media/ayman/830fc2d1-809b-4a46-b9cf-2d08cf1852b2")
+    , m_usbPath("")
     , m_index(0)
     , m_isVideo(false)
 {
@@ -40,16 +43,9 @@ void UsbPlayer::activate()
     scanUsb();
     if (!m_files.isEmpty()) {
         m_index = 0;
-        QString fileName = m_files.at(m_index);
-        QString ext = fileName.section('.', -1).toLower();
-
-        bool video = (ext == "mp4" || ext == "mkv" || ext == "avi" || ext == "mov" || ext == "wmv");
-        setIsVideo(video);
-
-        setSongTitle(fileName.section('.', 0, -2));
-        m_player->setSource(QUrl::fromLocalFile(m_usbPath + "/" + fileName));
+        playTrack(m_index);
     } else {
-        setSongTitle("No Music Found on USB");
+        setSongTitle("No Media Found");
     }
 }
 
@@ -122,9 +118,43 @@ void UsbPlayer::setAudioOutput(QAudioOutput *output)
 
 void UsbPlayer::scanUsb()
 {
-    m_files = QDir(m_usbPath).entryList(
-        {"*.mp3","*.wav","*.flac","*.aac","*.mp4","*.mkv","*.avi","*.mov","*.wmv"},
-        QDir::Files);
+    QString userName = qgetenv("USER");
+    QString baseDir = (userName.isEmpty()) ? "/media" : "/media/" + userName;
+
+    QDir rootDir(baseDir);
+    if (!rootDir.exists()) {
+        qDebug() << "UsbPlayer: Base directory does not exist:" << baseDir;
+        return;
+    }
+
+    QStringList drives = rootDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    if (drives.isEmpty()) {
+        qDebug() << "UsbPlayer: No drives found";
+        return;
+    }
+
+    m_files.clear();
+    QStringList filters = {"*.mp3", "*.wav", "*.flac", "*.aac", "*.mp4", "*.mkv", "*.avi", "*.mov", "*.wmv",
+                          "*.MP3", "*.WAV", "*.FLAC", "*.AAC", "*.MP4", "*.MKV", "*.AVI", "*.MOV", "*.WMV"};
+
+    // Loop through all found drives to find where the music/videos actually are
+    for (const QString &drive : drives) {
+        QString drivePath = baseDir + "/" + drive;
+        
+        QDirIterator it(drivePath, filters, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            m_files.append(it.next());
+        }
+
+        if (!m_files.isEmpty()) {
+            m_usbPath = drivePath;
+            break; 
+        }
+    }
+
+    if (m_files.isEmpty()) {
+        setSongTitle("No Music Found");
+    }
 }
 
 void UsbPlayer::playTrack(int index)
@@ -133,14 +163,17 @@ void UsbPlayer::playTrack(int index)
         return;
 
     m_index = index;
-    QString fileName = m_files.at(m_index);
-    QString ext = fileName.section('.', -1).toLower();
+    QString fullPath = m_files.at(m_index);
+    
+    QFileInfo fileInfo(fullPath);
+    QString ext = fileInfo.suffix().toLower();
 
     bool video = (ext == "mp4" || ext == "mkv" || ext == "avi" || ext == "mov" || ext == "wmv");
     setIsVideo(video);
 
-    setSongTitle(fileName.section('.', 0, -2));
-    m_player->setSource(QUrl::fromLocalFile(m_usbPath + "/" + fileName));
+    setSongTitle(fileInfo.baseName());
+    
+    m_player->setSource(QUrl::fromLocalFile(fullPath));
     m_player->play();
 }
 
