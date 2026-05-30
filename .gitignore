@@ -1,3 +1,15 @@
 /build*
 .vscode/*
+<<<<<<< HEAD
  
+=======
+build/
+.qt/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.user
+*.autosave
+*.bak
+*.old
+>>>>>>> origin/abdelfattah
