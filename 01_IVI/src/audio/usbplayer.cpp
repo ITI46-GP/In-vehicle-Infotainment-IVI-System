@@ -3,6 +3,8 @@
 #include <QUrl>
 #include <QDirIterator>
 #include <QFileInfo>
+#include <QFile>
+#include <QTextStream>
 #include <QDebug>
 
 UsbPlayer::UsbPlayer(QObject *parent)
@@ -118,42 +120,41 @@ void UsbPlayer::setAudioOutput(QAudioOutput *output)
 
 void UsbPlayer::scanUsb()
 {
-    QString userName = qgetenv("USER");
-    QString baseDir = (userName.isEmpty()) ? "/media" : "/media/" + userName;
-
-    QDir rootDir(baseDir);
-    if (!rootDir.exists()) {
-        qDebug() << "UsbPlayer: Base directory does not exist:" << baseDir;
-        return;
-    }
-
-    QStringList drives = rootDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    if (drives.isEmpty()) {
-        qDebug() << "UsbPlayer: No drives found";
-        return;
-    }
-
     m_files.clear();
+    QStringList candidates;
+
+    QFile file("/proc/mounts");
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (line.contains("/media/") || line.contains("/run/media/") || line.contains("/mnt/")) {
+                QString path = line.split(" ").at(1);
+                candidates.append(path);
+            }
+        }
+        file.close();
+    }
+
+    candidates.append("/media");
+    candidates.append("/mnt");
+
     QStringList filters = {"*.mp3", "*.wav", "*.flac", "*.aac", "*.mp4", "*.mkv", "*.avi", "*.mov", "*.wmv",
                           "*.MP3", "*.WAV", "*.FLAC", "*.AAC", "*.MP4", "*.MKV", "*.AVI", "*.MOV", "*.WMV"};
 
-    // Loop through all found drives to find where the music/videos actually are
-    for (const QString &drive : drives) {
-        QString drivePath = baseDir + "/" + drive;
-        
-        QDirIterator it(drivePath, filters, QDir::Files, QDirIterator::Subdirectories);
+    for (const QString &baseDir : candidates) {
+        QDir dir(baseDir);
+        if (!dir.exists()) continue;
+
+        QDirIterator it(baseDir, filters, QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             m_files.append(it.next());
         }
 
         if (!m_files.isEmpty()) {
-            m_usbPath = drivePath;
-            break; 
+            m_usbPath = baseDir;
+            return;
         }
-    }
-
-    if (m_files.isEmpty()) {
-        setSongTitle("No Music Found");
     }
 }
 
